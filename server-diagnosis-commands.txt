@@ -1,0 +1,25 @@
+# 在Debian服务器上依次执行以下命令，并复制输出结果
+
+# 1. 检查容器状态
+docker ps -a | grep canteen
+
+# 2. 检查容器日志
+docker logs canteen-menu --tail 20
+
+# 3. 检查端口占用
+netstat -tlnp | grep :1214
+
+# 4. 测试本地API
+curl -v http://localhost:1214/api/health
+
+# 5. 测试根路径
+curl -v http://localhost:1214/
+
+# 6. 检查容器内静态文件
+docker exec canteen-menu ls -la /app/static/
+
+# 7. 检查容器内进程
+docker exec canteen-menu ps aux
+
+# 8. 检查Docker Compose配置
+cat compose.yaml
