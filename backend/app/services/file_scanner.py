@@ -21,13 +21,11 @@ class FileScanner:
         初始化文件扫描器
         
         Args:
-            menu_directory: 菜单文件目录路径，默认为项目根目录下的menu文件夹
+            menu_directory: 菜单文件目录路径，默认为/app/menu
         """
         if menu_directory is None:
-            # 获取项目根目录下的menu文件夹
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
-            menu_directory = os.path.join(project_root, 'menu')
+            # 在容器环境中使用固定路径 /app/menu
+            menu_directory = '/app/menu'
         
         self.menu_directory = menu_directory
         self.excel_parser = ExcelParser()
