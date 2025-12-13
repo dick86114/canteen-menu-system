@@ -1,52 +1,52 @@
-# Excel Parser Service
+# Excel 解析服务
 
-The Excel Parser service provides functionality to parse Excel files containing canteen menu data and convert them into structured `MenuData` objects.
+Excel 解析服务提供解析包含食堂菜单数据的 Excel 文件并将其转换为结构化 `MenuData` 对象的功能。
 
-## Features
+## 功能特性
 
-- **File Format Validation**: Validates that uploaded files are Excel format (.xlsx, .xls)
-- **Flexible Column Detection**: Automatically identifies columns by name patterns or data content
-- **Multi-language Support**: Handles both English and Chinese column names and meal types
-- **Date Format Flexibility**: Supports various date formats including ISO, US, European, and Chinese formats
-- **Robust Error Handling**: Gracefully handles malformed data and provides meaningful error messages
-- **Data Validation**: Ensures parsed data meets the system's data model requirements
+- **文件格式验证**: 验证上传的文件是否为 Excel 格式 (.xlsx, .xls)
+- **灵活的列检测**: 通过名称模式或数据内容自动识别列
+- **多语言支持**: 处理英文和中文列名及餐次类型
+- **日期格式灵活性**: 支持多种日期格式，包括 ISO、美式、欧式和中文格式
+- **健壮的错误处理**: 优雅地处理格式错误的数据并提供有意义的错误消息
+- **数据验证**: 确保解析的数据符合系统的数据模型要求
 
-## Usage
+## 使用方法
 
-### Basic Usage
+### 基本用法
 
 ```python
 from app.services.excel_parser import ExcelParser, ExcelParsingError
 
-# Initialize parser
+# 初始化解析器
 parser = ExcelParser()
 
-# Parse Excel file
+# 解析 Excel 文件
 try:
     menu_data_list = parser.parse_excel_file("path/to/menu.xlsx")
     for menu_data in menu_data_list:
-        print(f"Date: {menu_data.date}")
+        print(f"日期: {menu_data.date}")
         for meal in menu_data.meals:
-            print(f"  {meal.type} at {meal.time}: {len(meal.items)} items")
+            print(f"  {meal.type} 在 {meal.time}: {len(meal.items)} 个菜品")
 except ExcelParsingError as e:
-    print(f"Parsing failed: {e}")
+    print(f"解析失败: {e}")
 ```
 
-### File Format Validation
+### 文件格式验证
 
 ```python
-# Check if file format is supported
+# 检查文件格式是否支持
 if parser.validate_file_format("menu.xlsx"):
-    print("File format is supported")
+    print("文件格式受支持")
 else:
-    print("Unsupported file format")
+    print("不支持的文件格式")
 ```
 
-## Supported Excel Structures
+## 支持的 Excel 结构
 
-The parser can handle various Excel file structures:
+解析器可以处理各种 Excel 文件结构：
 
-### Structure 1: Column-based with Headers
+### 结构 1: 基于列的带标题格式
 ```
 | Date       | Meal Type | Time  | Food Name        | Description      | Category |
 |------------|-----------|-------|------------------|------------------|----------|
@@ -54,7 +54,7 @@ The parser can handle various Excel file structures:
 | 2023-12-15 | lunch     | 12:00 | Chicken Rice     | Healthy meal     | main     |
 ```
 
-### Structure 2: Chinese Headers
+### 结构 2: 中文标题格式
 ```
 | 日期       | 餐次      | 时间  | 菜名             | 描述             | 类别     |
 |------------|-----------|-------|------------------|------------------|----------|
@@ -62,7 +62,7 @@ The parser can handle various Excel file structures:
 | 2023-12-15 | 午餐      | 12:00 | 鸡肉饭           | 健康餐           | 主菜     |
 ```
 
-### Structure 3: Minimal (Date and Food Name only)
+### 结构 3: 最简格式（仅日期和菜名）
 ```
 | Date       | Food Name        |
 |------------|------------------|
@@ -70,91 +70,91 @@ The parser can handle various Excel file structures:
 | 2023-12-15 | Chicken Rice     |
 ```
 
-## Column Detection
+## 列检测
 
-The parser uses a two-stage approach to identify columns:
+解析器使用两阶段方法来识别列：
 
-1. **Name-based Detection**: Looks for common patterns in column names
-2. **Content-based Detection**: Analyzes data content when names are unclear
+1. **基于名称的检测**: 在列名中查找常见模式
+2. **基于内容的检测**: 当名称不清楚时分析数据内容
 
-### Supported Column Name Patterns
+### 支持的列名模式
 
-- **Date**: `date`, `日期`, `时间`, `time`
-- **Meal Type**: `meal`, `type`, `餐次`, `类型`
-- **Time**: `time`, `时间`, `hour`
-- **Food Name**: `food`, `name`, `菜名`, `食物`, `dish`
-- **Description**: `desc`, `描述`, `说明`, `detail`
-- **Category**: `category`, `类别`, `分类`, `cat`
+- **日期**: `date`, `日期`, `时间`, `time`
+- **餐次类型**: `meal`, `type`, `餐次`, `类型`
+- **时间**: `time`, `时间`, `hour`
+- **菜品名称**: `food`, `name`, `菜名`, `食物`, `dish`
+- **描述**: `desc`, `描述`, `说明`, `detail`
+- **类别**: `category`, `类别`, `分类`, `cat`
 
-## Date Format Support
+## 日期格式支持
 
-The parser supports multiple date formats:
+解析器支持多种日期格式：
 
-- ISO format: `2023-12-15`
-- US format: `12/15/2023`
-- European format: `15/12/2023`
-- Chinese format: `2023年12月15日`
-- Short Chinese: `12月15日`
+- ISO 格式: `2023-12-15`
+- 美式格式: `12/15/2023`
+- 欧式格式: `15/12/2023`
+- 中文格式: `2023年12月15日`
+- 中文简写: `12月15日`
 
-## Meal Type Mapping
+## 餐次类型映射
 
-The parser normalizes various meal type representations:
+解析器规范化各种餐次类型表示：
 
-- **Breakfast**: `breakfast`, `早餐`, `早饭`, `早点`, `morning`
-- **Lunch**: `lunch`, `午餐`, `午饭`, `中餐`, `noon`, `midday`
-- **Dinner**: `dinner`, `晚餐`, `晚饭`, `晚点`, `evening`, `supper`
+- **早餐**: `breakfast`, `早餐`, `早饭`, `早点`, `morning`
+- **午餐**: `lunch`, `午餐`, `午饭`, `中餐`, `noon`, `midday`
+- **晚餐**: `dinner`, `晚餐`, `晚饭`, `晚点`, `evening`, `supper`
 
-## Error Handling
+## 错误处理
 
-The parser provides specific error messages for different failure scenarios:
+解析器为不同的失败场景提供具体的错误消息：
 
-- **File not found**: When the specified file doesn't exist
-- **Invalid format**: When the file is not a valid Excel file
-- **Empty file**: When the Excel file contains no data
-- **Missing columns**: When required columns (date, food name) cannot be identified
-- **Invalid data**: When data doesn't meet validation requirements
+- **文件未找到**: 当指定的文件不存在时
+- **无效格式**: 当文件不是有效的 Excel 文件时
+- **空文件**: 当 Excel 文件不包含数据时
+- **缺少列**: 当无法识别必需的列（日期、菜品名称）时
+- **无效数据**: 当数据不符合验证要求时
 
-## Integration with Upload API
+## 与文件扫描器集成
 
-The Excel parser is integrated with the upload API endpoint:
+Excel 解析器与文件扫描器集成：
 
 ```python
-# In upload.py
-from ..services.excel_parser import ExcelParser, ExcelParsingError
+# 在 file_scanner.py 中
+from .excel_parser import ExcelParser, ExcelParsingError
 
 parser = ExcelParser()
 menu_data_list = parser.parse_excel_file(filepath)
 ```
 
-## Performance Considerations
+## 性能考虑
 
-- The parser processes files in memory using pandas
-- Large files (>16MB) are rejected by the upload size limit
-- Column detection is optimized to check only the first 10 rows for content analysis
-- Malformed rows are skipped rather than causing complete failure
+- 解析器使用pandas在内存中处理文件
+- 大文件（>16MB）被上传大小限制拒绝
+- 列检测优化为仅检查前10行进行内容分析
+- 格式错误的行被跳过而不是导致完全失败
 
-## Testing
+## 测试
 
-The parser includes comprehensive tests covering:
+解析器包含全面的测试，涵盖：
 
-- File format validation
-- Date parsing with various formats
-- Meal type normalization
-- Column detection algorithms
-- Error handling scenarios
-- Complete file parsing workflows
+- 文件格式验证
+- 各种格式的日期解析
+- 餐次类型规范化
+- 列检测算法
+- 错误处理场景
+- 完整的文件解析工作流
 
-Run tests with:
+运行测试：
 ```bash
 python -m pytest tests/test_excel_parser.py -v
 ```
 
-## Future Enhancements
+## 未来增强
 
-Potential improvements for future versions:
+未来版本的潜在改进：
 
-- Support for multiple sheets in a single Excel file
-- Batch processing of multiple files
-- Custom column mapping configuration
-- Advanced data validation rules
-- Performance optimization for very large files
+- 支持单个Excel文件中的多个工作表
+- 多个文件的批处理
+- 自定义列映射配置
+- 高级数据验证规则
+- 对非常大文件的性能优化

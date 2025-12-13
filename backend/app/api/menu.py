@@ -94,8 +94,9 @@ class MenuResource(Resource):
             return menu_data.to_dict()
         else:
             # Get current date menu or most recent if no date specified
+            from ..utils.timezone import today_str
             storage = get_storage()
-            current_date = datetime.now().strftime('%Y-%m-%d')
+            current_date = today_str()
             menu_data = storage.get_menu_by_date(current_date)
             
             if menu_data is None:
@@ -143,7 +144,8 @@ class DatesResource(Resource):
         }
         
         # Add current date information
-        current_date = datetime.now().strftime('%Y-%m-%d')
+        from ..utils.timezone import today_str
+        current_date = today_str()
         response['currentDate'] = current_date
         response['hasCurrentDate'] = current_date in dates
         

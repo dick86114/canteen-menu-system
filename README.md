@@ -55,6 +55,7 @@ docker run -d \
   --name canteen-menu \
   -p 5000:5000 \
   -v $(pwd)/menu:/app/menu \
+  -e TZ=Asia/Shanghai \
   --restart unless-stopped \
   ghcr.io/dick86114/canteen-menu-system:latest
 
@@ -67,7 +68,7 @@ docker run -d \
 **使用 Docker Compose**
 ```bash
 # 1. 下载配置文件
-wget https://raw.githubusercontent.com/dick86114/canteen-menu-system/main/docker-compose.yml
+wget https://raw.githubusercontent.com/dick86114/canteen-menu-system/main/compose.yaml
 
 # 2. 启动服务
 docker-compose up -d
@@ -90,6 +91,7 @@ docker run -d \
   --name canteen-menu \
   -p 5000:5000 \
   -v $(pwd)/menu:/app/menu \
+  -e TZ=Asia/Shanghai \
   canteen-menu-system
 ```
 
@@ -104,6 +106,30 @@ cp your-menu-file.xlsx ./menu/
 docker restart canteen-menu
 
 # 或者通过界面点击"刷新菜单"按钮
+```
+
+### 🌍 时区配置
+
+系统支持自定义时区设置，确保时间显示正确：
+
+```bash
+# 设置中国标准时间（默认）
+docker run -e TZ=Asia/Shanghai ...
+
+# 设置美国东部时间
+docker run -e TZ=America/New_York ...
+
+# 设置欧洲伦敦时间
+docker run -e TZ=Europe/London ...
+
+# 设置日本标准时间
+docker run -e TZ=Asia/Tokyo ...
+```
+
+**Docker Compose 时区配置：**
+```yaml
+environment:
+  - TZ=Asia/Shanghai  # 根据需要修改时区
 ```
 
 ### 💻 本地开发部署

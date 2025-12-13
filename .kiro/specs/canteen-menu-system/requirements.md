@@ -1,89 +1,89 @@
-# Requirements Document
+# 需求文档
 
-## Introduction
+## 介绍
 
-This document specifies the requirements for a canteen menu management website that allows users to upload Excel files containing weekly menus and displays menu content in an intuitive, date-based interface. The system will automatically parse uploaded Excel files and present daily menus with modern UI components and responsive design.
+本文档规定了食堂菜单管理网站的需求，该网站允许用户上传包含每周菜单的Excel文件，并在直观的基于日期的界面中显示菜单内容。系统将自动解析上传的Excel文件，并使用现代UI组件和响应式设计呈现每日菜单。
 
-## Glossary
+## 术语表
 
-- **Menu_System**: The complete web application for managing and displaying canteen menus
-- **Excel_Parser**: The backend component responsible for reading and parsing Excel menu files
-- **Menu_Display**: The frontend component that renders daily menu information
-- **Date_Selector**: The UI component allowing users to navigate between different dates
-- **Menu_Card**: Individual UI component displaying menu items for a specific meal or time period
-- **Upload_Interface**: The frontend component handling file upload functionality
-- **Menu_Data**: Structured information containing date, food names, descriptions, and meal types
+- **菜单系统**: 用于管理和显示食堂菜单的完整Web应用程序
+- **Excel解析器**: 负责读取和解析Excel菜单文件的后端组件
+- **菜单显示**: 渲染每日菜单信息的前端组件
+- **日期选择器**: 允许用户在不同日期之间导航的UI组件
+- **菜单卡片**: 显示特定餐次或时间段菜单项的单个UI组件
+- **上传界面**: 处理文件上传功能的前端组件
+- **菜单数据**: 包含日期、菜品名称、描述和餐次类型的结构化信息
 
 ## Requirements
 
-### Requirement 1
+### 需求 1
 
-**User Story:** As a canteen administrator, I want to upload Excel files containing weekly menus, so that the system can automatically display menu information to users.
+**用户故事:** 作为食堂管理员，我希望上传包含每周菜单的Excel文件，以便系统能够自动向用户显示菜单信息。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. WHEN a user selects an Excel file through the upload interface, THE Menu_System SHALL validate the file format and accept only .xlsx files
-2. WHEN an Excel file is uploaded, THE Excel_Parser SHALL read and extract menu data including dates, food names, descriptions, and meal types
-3. WHEN file parsing is complete, THE Menu_System SHALL store the parsed menu data for retrieval and display
-4. WHEN an invalid file format is uploaded, THE Menu_System SHALL reject the file and display an appropriate error message
-5. WHEN file upload exceeds size limits, THE Menu_System SHALL prevent the upload and notify the user of the restriction
+1. 当用户通过上传界面选择Excel文件时，菜单系统应验证文件格式并仅接受.xlsx文件
+2. 当上传Excel文件时，Excel解析器应读取并提取菜单数据，包括日期、菜品名称、描述和餐次类型
+3. 当文件解析完成时，菜单系统应存储解析的菜单数据以供检索和显示
+4. 当上传无效文件格式时，菜单系统应拒绝该文件并显示适当的错误消息
+5. 当文件上传超过大小限制时，菜单系统应阻止上传并通知用户限制
 
-### Requirement 2
+### 需求 2
 
-**User Story:** As a user, I want to view daily menus in an organized format, so that I can easily see what food is available each day.
+**用户故事:** 作为用户，我希望以有组织的格式查看每日菜单，以便我能够轻松看到每天有什么食物可用。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. WHEN the application loads, THE Menu_Display SHALL show the current date's menu by default
-2. WHEN no menu exists for the current date, THE Menu_Display SHALL show the most recent available menu
-3. WHEN menu data exists for a date, THE Menu_System SHALL display food names, descriptions, and meal times in card format
-4. WHEN no menu data exists for a selected date, THE Menu_Display SHALL show a clear message indicating no data is available
-5. WHEN displaying menu items, THE Menu_System SHALL organize content by meal type and time periods
+1. 当应用程序加载时，菜单显示应默认显示当前日期的菜单
+2. 当当前日期不存在菜单时，菜单显示应显示最近可用的菜单
+3. 当某个日期存在菜单数据时，菜单系统应以卡片格式显示菜品名称、描述和用餐时间
+4. 当所选日期不存在菜单数据时，菜单显示应显示清晰的消息，表明没有可用数据
+5. 当显示菜单项时，菜单系统应按餐次类型和时间段组织内容
 
-### Requirement 3
+### 需求 3
 
-**User Story:** As a user, I want to navigate between different dates, so that I can view menus for past and future days.
+**用户故事:** 作为用户，我希望在不同日期之间导航，以便我能够查看过去和未来几天的菜单。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. WHEN the date selector is displayed, THE Menu_System SHALL show the current date as the default selection
-2. WHEN a user selects a different date, THE Menu_Display SHALL update to show the menu for the selected date
-3. WHEN navigating between dates, THE Date_Selector SHALL provide intuitive forward and backward navigation controls
-4. WHEN a date is selected, THE Menu_System SHALL retrieve and display the corresponding menu data within reasonable response time
-5. WHEN the date selector is used, THE Menu_System SHALL maintain the selected date state during the user session
+1. 当显示日期选择器时，菜单系统应将当前日期显示为默认选择
+2. 当用户选择不同日期时，菜单显示应更新以显示所选日期的菜单
+3. 当在日期之间导航时，日期选择器应提供直观的前进和后退导航控件
+4. 当选择日期时，菜单系统应在合理的响应时间内检索并显示相应的菜单数据
+5. 当使用日期选择器时，菜单系统应在用户会话期间保持所选日期状态
 
-### Requirement 4
+### 需求 4
 
-**User Story:** As a user accessing the website from different devices, I want the interface to work well on mobile, tablet, and desktop, so that I can view menus regardless of my device.
+**用户故事:** 作为从不同设备访问网站的用户，我希望界面在移动设备、平板电脑和桌面上都能良好工作，以便我可以在任何设备上查看菜单。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. WHEN the website is accessed on mobile devices, THE Menu_System SHALL display content in a mobile-optimized layout
-2. WHEN the screen size changes, THE Menu_Display SHALL automatically adjust card layouts and spacing
-3. WHEN touch interactions are used, THE Date_Selector SHALL respond appropriately to touch gestures
-4. WHEN viewed on different screen sizes, THE Menu_System SHALL maintain readability and usability
-5. WHEN navigation elements are displayed, THE Menu_System SHALL ensure they are appropriately sized for the target device
+1. 当在移动设备上访问网站时，菜单系统应以移动优化的布局显示内容
+2. 当屏幕尺寸改变时，菜单显示应自动调整卡片布局和间距
+3. 当使用触摸交互时，日期选择器应适当响应触摸手势
+4. 当在不同屏幕尺寸上查看时，菜单系统应保持可读性和可用性
+5. 当显示导航元素时，菜单系统应确保它们针对目标设备适当调整大小
 
-### Requirement 5
+### 需求 5
 
-**User Story:** As a system administrator, I want the application to handle file uploads securely and efficiently, so that the system remains stable and secure.
+**用户故事:** 作为系统管理员，我希望应用程序安全高效地处理文件上传，以便系统保持稳定和安全。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. WHEN files are uploaded, THE Menu_System SHALL validate file content to prevent malicious uploads
-2. WHEN processing Excel files, THE Excel_Parser SHALL handle parsing errors gracefully without system crashes
-3. WHEN multiple users access the system, THE Menu_System SHALL maintain performance and responsiveness
-4. WHEN file uploads occur, THE Menu_System SHALL enforce size limitations to prevent resource exhaustion
-5. WHEN parsing Excel data, THE Excel_Parser SHALL validate data structure and handle missing or malformed data appropriately
+1. 当上传文件时，菜单系统应验证文件内容以防止恶意上传
+2. 当处理Excel文件时，Excel解析器应优雅地处理解析错误而不会导致系统崩溃
+3. 当多个用户访问系统时，菜单系统应保持性能和响应性
+4. 当发生文件上传时，菜单系统应强制执行大小限制以防止资源耗尽
+5. 当解析Excel数据时，Excel解析器应验证数据结构并适当处理缺失或格式错误的数据
 
-### Requirement 6
+### 需求 6
 
-**User Story:** As a user, I want the website to have an attractive and intuitive interface, so that I can easily find and view menu information.
+**用户故事:** 作为用户，我希望网站具有吸引人且直观的界面，以便我能够轻松找到和查看菜单信息。
 
-#### Acceptance Criteria
+#### 验收标准
 
-1. WHEN the interface loads, THE Menu_System SHALL display a clean, modern design with appropriate color schemes
-2. WHEN menu cards are displayed, THE Menu_Display SHALL use consistent styling and clear typography
-3. WHEN interactive elements are presented, THE Menu_System SHALL provide visual feedback for user actions
-4. WHEN content is organized, THE Menu_Display SHALL use logical grouping and clear visual hierarchy
-5. WHEN users interact with the interface, THE Menu_System SHALL provide smooth transitions and responsive feedback
+1. 当界面加载时，菜单系统应显示具有适当配色方案的简洁现代设计
+2. 当显示菜单卡片时，菜单显示应使用一致的样式和清晰的排版
+3. 当呈现交互元素时，菜单系统应为用户操作提供视觉反馈
+4. 当组织内容时，菜单显示应使用逻辑分组和清晰的视觉层次结构
+5. 当用户与界面交互时，菜单系统应提供平滑的过渡和响应式反馈

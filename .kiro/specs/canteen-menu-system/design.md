@@ -1,57 +1,57 @@
-# Design Document - Canteen Menu System
+# 设计文档 - 食堂菜单系统
 
-## Overview
+## 概述
 
-The Canteen Menu System is a full-stack web application that enables administrators to upload Excel files containing weekly menus and allows users to browse daily menus through an intuitive date-based interface. The system consists of a React frontend for user interaction and a Flask backend for file processing and data management.
+食堂菜单系统是一个全栈Web应用程序，使管理员能够上传包含每周菜单的Excel文件，并允许用户通过直观的基于日期的界面浏览每日菜单。该系统由用于用户交互的React前端和用于文件处理和数据管理的Flask后端组成。
 
-## Architecture
+## 架构
 
-The system follows a client-server architecture with clear separation of concerns:
+系统遵循客户端-服务器架构，具有清晰的关注点分离：
 
-### Frontend (React)
-- **User Interface Layer**: React components for file upload, menu display, and date navigation
-- **State Management**: React hooks for managing application state and API interactions
-- **Responsive Design**: CSS Grid/Flexbox with Bootstrap for cross-device compatibility
+### 前端 (React)
+- **用户界面层**: 用于文件上传、菜单显示和日期导航的React组件
+- **状态管理**: 用于管理应用程序状态和API交互的React hooks
+- **响应式设计**: 使用Bootstrap的CSS Grid/Flexbox实现跨设备兼容性
 
-### Backend (Flask)
-- **API Layer**: RESTful endpoints for file upload and menu data retrieval
-- **File Processing Layer**: Excel parsing using pandas and openpyxl
-- **Data Layer**: In-memory storage with optional database persistence
+### 后端 (Flask)
+- **API层**: 用于文件上传和菜单数据检索的RESTful端点
+- **文件处理层**: 使用pandas和openpyxl进行Excel解析
+- **数据层**: 内存存储，可选数据库持久化
 
-### Communication
-- **HTTP/REST API**: JSON-based communication between frontend and backend
-- **File Upload**: Multipart form data for Excel file transmission
+### 通信
+- **HTTP/REST API**: 前端和后端之间基于JSON的通信
+- **文件上传**: 用于Excel文件传输的多部分表单数据
 
-## Components and Interfaces
+## 组件和接口
 
-### Frontend Components
+### 前端组件
 
-#### MenuUpload Component
-- **Purpose**: Handle Excel file selection and upload
-- **Props**: onUploadSuccess callback
-- **State**: uploadStatus, selectedFile, uploadProgress
-- **Methods**: handleFileSelect(), uploadFile(), validateFile()
+#### 菜单上传组件 (MenuUpload)
+- **目的**: 处理Excel文件选择和上传
+- **属性**: onUploadSuccess回调函数
+- **状态**: uploadStatus, selectedFile, uploadProgress
+- **方法**: handleFileSelect(), uploadFile(), validateFile()
 
-#### MenuDisplay Component  
-- **Purpose**: Render daily menu cards with food items
-- **Props**: menuData, selectedDate
-- **State**: displayMode (card/list)
-- **Methods**: renderMenuCard(), formatMealTime(), groupByMealType()
+#### 菜单显示组件 (MenuDisplay)
+- **目的**: 渲染包含食物项的每日菜单卡片
+- **属性**: menuData, selectedDate
+- **状态**: displayMode (card/list)
+- **方法**: renderMenuCard(), formatMealTime(), groupByMealType()
 
-#### DateSelector Component
-- **Purpose**: Provide date navigation and selection
-- **Props**: selectedDate, onDateChange, availableDates
-- **State**: calendarVisible, dateRange
-- **Methods**: handleDateChange(), navigateDate(), checkDateAvailability()
+#### 日期选择器组件 (DateSelector)
+- **目的**: 提供日期导航和选择
+- **属性**: selectedDate, onDateChange, availableDates
+- **状态**: calendarVisible, dateRange
+- **方法**: handleDateChange(), navigateDate(), checkDateAvailability()
 
-#### App Component
-- **Purpose**: Main application container and state management
-- **State**: currentDate, menuData, uploadedFiles, loading
-- **Methods**: fetchMenuData(), handleDateChange(), handleUploadSuccess()
+#### 应用主组件 (App)
+- **目的**: 主应用程序容器和状态管理
+- **状态**: currentDate, menuData, uploadedFiles, loading
+- **方法**: fetchMenuData(), handleDateChange(), handleUploadSuccess()
 
-### Backend Interfaces
+### 后端接口
 
-#### File Upload API
+#### 文件上传API
 ```python
 POST /api/upload
 Content-Type: multipart/form-data
@@ -62,7 +62,7 @@ Response: {
 }
 ```
 
-#### Menu Retrieval API
+#### 菜单检索API
 ```python
 GET /api/menu?date=YYYY-MM-DD
 Response: {
@@ -83,7 +83,7 @@ Response: {
 }
 ```
 
-#### Available Dates API
+#### 可用日期API
 ```python
 GET /api/dates
 Response: {
@@ -95,18 +95,18 @@ Response: {
 }
 ```
 
-## Data Models
+## 数据模型
 
-### MenuData Model
+### 菜单数据模型
 ```typescript
 interface MenuData {
-  date: string;           // ISO date format YYYY-MM-DD
+  date: string;           // ISO日期格式 YYYY-MM-DD
   meals: Meal[];
 }
 
 interface Meal {
   type: 'breakfast' | 'lunch' | 'dinner';
-  time: string;           // HH:MM format
+  time: string;           // HH:MM格式
   items: MenuItem[];
 }
 
@@ -118,16 +118,16 @@ interface MenuItem {
 }
 ```
 
-### Excel Data Structure
-Expected Excel format:
-- Column A: Date (YYYY-MM-DD or recognizable date format)
-- Column B: Meal Type (breakfast/lunch/dinner)
-- Column C: Time (HH:MM)
-- Column D: Food Name
-- Column E: Description
-- Column F: Category (optional)
+### Excel数据结构
+期望的Excel格式：
+- A列: 日期 (YYYY-MM-DD或可识别的日期格式)
+- B列: 餐次类型 (breakfast/lunch/dinner)
+- C列: 时间 (HH:MM)
+- D列: 菜品名称
+- E列: 描述
+- F列: 类别 (可选)
 
-### Storage Model
+### 存储模型
 ```python
 class MenuStorage:
     def __init__(self):
@@ -140,144 +140,144 @@ class MenuStorage:
     def clear_data(self) -> None
 ```
 
-## Correctness Properties
+## 正确性属性
 
-*A property is a characteristic or behavior that should hold true across all valid executions of a system-essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+*属性是在系统的所有有效执行中应该保持为真的特征或行为——本质上是关于系统应该做什么的正式声明。属性作为人类可读规范和机器可验证正确性保证之间的桥梁。*
 
-Based on the prework analysis, the following correctness properties have been identified:
+基于预工作分析，已识别出以下正确性属性：
 
-**Property 1: File format validation consistency**
-*For any* uploaded file, the system should accept the file if and only if it has a .xlsx extension, rejecting all other formats with appropriate error messages
-**Validates: Requirements 1.1, 1.4, 5.1**
+**属性 1: 文件格式验证一致性**
+*对于任何*上传的文件，系统应当且仅当文件具有.xlsx扩展名时接受该文件，拒绝所有其他格式并显示适当的错误消息
+**验证: 需求 1.1, 1.4, 5.1**
 
-**Property 2: Excel parsing completeness**
-*For any* valid Excel file with menu data, the parser should extract all present data fields (dates, food names, descriptions, meal types) without loss
-**Validates: Requirements 1.2**
+**属性 2: Excel解析完整性**
+*对于任何*包含菜单数据的有效Excel文件，解析器应提取所有存在的数据字段（日期、菜品名称、描述、餐次类型）而不丢失
+**验证: 需求 1.2**
 
-**Property 3: Data storage round trip**
-*For any* parsed menu data, storing and then retrieving the data should return equivalent menu information
-**Validates: Requirements 1.3**
+**属性 3: 数据存储往返**
+*对于任何*解析的菜单数据，存储然后检索数据应返回等效的菜单信息
+**验证: 需求 1.3**
 
-**Property 4: File size limit enforcement**
-*For any* file upload attempt, files exceeding the size limit should be consistently rejected regardless of content or format
-**Validates: Requirements 1.5, 5.4**
+**属性 4: 文件大小限制执行**
+*对于任何*文件上传尝试，超过大小限制的文件应被一致拒绝，无论内容或格式如何
+**验证: 需求 1.5, 5.4**
 
-**Property 5: Fallback menu selection**
-*For any* date without menu data, the system should display the most recent available menu from the stored data
-**Validates: Requirements 2.2**
+**属性 5: 回退菜单选择**
+*对于任何*没有菜单数据的日期，系统应显示存储数据中最近可用的菜单
+**验证: 需求 2.2**
 
-**Property 6: Menu display completeness**
-*For any* valid menu data, the display should include all required fields (food names, descriptions, meal times) in the rendered output
-**Validates: Requirements 2.3**
+**属性 6: 菜单显示完整性**
+*对于任何*有效的菜单数据，显示应在渲染输出中包含所有必需字段（菜品名称、描述、用餐时间）
+**验证: 需求 2.3**
 
-**Property 7: Empty date handling**
-*For any* date with no menu data, the system should display a consistent "no data available" message
-**Validates: Requirements 2.4**
+**属性 7: 空日期处理**
+*对于任何*没有菜单数据的日期，系统应显示一致的"无可用数据"消息
+**验证: 需求 2.4**
 
-**Property 8: Meal organization consistency**
-*For any* menu data with multiple meals, the display should group items by meal type and order them by time periods
-**Validates: Requirements 2.5**
+**属性 8: 餐次组织一致性**
+*对于任何*包含多个餐次的菜单数据，显示应按餐次类型分组项目并按时间段排序
+**验证: 需求 2.5**
 
-**Property 9: Date selection synchronization**
-*For any* date selection, the menu display should update to show the corresponding menu data for that specific date
-**Validates: Requirements 3.2**
+**属性 9: 日期选择同步**
+*对于任何*日期选择，菜单显示应更新以显示该特定日期的相应菜单数据
+**验证: 需求 3.2**
 
-**Property 10: Date state persistence**
-*For any* date selection during a user session, the selected date should remain active until explicitly changed by the user
-**Validates: Requirements 3.5**
+**属性 10: 日期状态持久性**
+*对于任何*用户会话期间的日期选择，所选日期应保持活动状态，直到用户明确更改
+**验证: 需求 3.5**
 
-**Property 11: Excel parsing robustness**
-*For any* malformed or corrupted Excel file, the parser should handle errors gracefully without system crashes and provide meaningful error messages
-**Validates: Requirements 5.2, 5.5**
+**属性 11: Excel解析健壮性**
+*对于任何*格式错误或损坏的Excel文件，解析器应优雅地处理错误而不会导致系统崩溃，并提供有意义的错误消息
+**验证: 需求 5.2, 5.5**
 
-**Property 12: UI styling consistency**
-*For any* menu card rendered, the styling classes and typography should be applied consistently across all cards
-**Validates: Requirements 6.2**
+**属性 12: UI样式一致性**
+*对于任何*渲染的菜单卡片，样式类和排版应在所有卡片中一致应用
+**验证: 需求 6.2**
 
-## Error Handling
+## 错误处理
 
-### File Upload Errors
-- **Invalid Format**: Return HTTP 400 with descriptive error message
-- **File Too Large**: Return HTTP 413 with size limit information
-- **Corrupted File**: Return HTTP 422 with parsing error details
-- **Network Issues**: Implement retry mechanism with exponential backoff
+### 文件上传错误
+- **无效格式**: 返回HTTP 400并附带描述性错误消息
+- **文件过大**: 返回HTTP 413并附带大小限制信息
+- **文件损坏**: 返回HTTP 422并附带解析错误详情
+- **网络问题**: 实现指数退避的重试机制
 
-### Data Processing Errors
-- **Malformed Excel**: Log error details, return user-friendly message
-- **Missing Required Columns**: Validate structure, provide column mapping guidance
-- **Date Parsing Failures**: Use fallback date formats, flag problematic entries
-- **Empty Data Sets**: Handle gracefully, maintain system stability
+### 数据处理错误
+- **格式错误的Excel**: 记录错误详情，返回用户友好的消息
+- **缺少必需列**: 验证结构，提供列映射指导
+- **日期解析失败**: 使用回退日期格式，标记有问题的条目
+- **空数据集**: 优雅处理，保持系统稳定性
 
-### Frontend Error Handling
-- **API Failures**: Display error notifications with retry options
-- **Loading States**: Show progress indicators during file processing
-- **Network Connectivity**: Detect offline state, queue operations
-- **Invalid User Input**: Provide real-time validation feedback
+### 前端错误处理
+- **API失败**: 显示带有重试选项的错误通知
+- **加载状态**: 在文件处理期间显示进度指示器
+- **网络连接**: 检测离线状态，排队操作
+- **无效用户输入**: 提供实时验证反馈
 
-## Testing Strategy
+## 测试策略
 
-### Dual Testing Approach
+### 双重测试方法
 
-The system will employ both unit testing and property-based testing to ensure comprehensive coverage:
+系统将采用单元测试和基于属性的测试来确保全面覆盖：
 
-**Unit Testing**:
-- Specific examples demonstrating correct behavior
-- Integration points between frontend and backend components
-- Edge cases like empty files, single-day menus, boundary dates
-- Error conditions and recovery scenarios
+**单元测试**:
+- 演示正确行为的具体示例
+- 前端和后端组件之间的集成点
+- 边界情况，如空文件、单日菜单、边界日期
+- 错误条件和恢复场景
 
-**Property-Based Testing**:
-- Universal properties that should hold across all inputs
-- Uses Hypothesis for Python backend testing
-- Uses fast-check for JavaScript frontend testing
-- Each property-based test configured to run minimum 100 iterations
-- Each test tagged with format: '**Feature: canteen-menu-system, Property {number}: {property_text}**'
+**基于属性的测试**:
+- 应在所有输入中保持的通用属性
+- 使用Hypothesis进行Python后端测试
+- 使用fast-check进行JavaScript前端测试
+- 每个基于属性的测试配置为运行最少100次迭代
+- 每个测试标记格式：'**功能: canteen-menu-system, 属性 {编号}: {属性文本}**'
 
-**Testing Framework Selection**:
-- **Backend**: pytest with Hypothesis for property-based testing
-- **Frontend**: Jest with fast-check for property-based testing
-- **Integration**: Cypress for end-to-end testing scenarios
+**测试框架选择**:
+- **后端**: pytest配合Hypothesis进行基于属性的测试
+- **前端**: Jest配合fast-check进行基于属性的测试
+- **集成**: Cypress进行端到端测试场景
 
-**Property-Based Test Requirements**:
-- Each correctness property must be implemented by a single property-based test
-- Tests must reference the corresponding design document property
-- Minimum 100 iterations per property test to ensure statistical confidence
-- Smart generators that constrain input space intelligently (valid Excel structures, realistic menu data)
+**基于属性的测试要求**:
+- 每个正确性属性必须由单个基于属性的测试实现
+- 测试必须引用相应的设计文档属性
+- 每个属性测试最少100次迭代以确保统计置信度
+- 智能生成器，智能约束输入空间（有效的Excel结构、现实的菜单数据）
 
-### Test Data Generation
+### 测试数据生成
 
-**Excel File Generators**:
-- Valid menu structures with varying date ranges
-- Files with missing columns or malformed data
-- Empty files and files with only headers
-- Files with different date formats and meal types
+**Excel文件生成器**:
+- 具有不同日期范围的有效菜单结构
+- 缺少列或格式错误数据的文件
+- 空文件和仅包含标题的文件
+- 具有不同日期格式和餐次类型的文件
 
-**Menu Data Generators**:
-- Random but realistic food names and descriptions
-- Various meal types and time combinations
-- Edge cases like single meals or full-day menus
-- Different date ranges and availability patterns
+**菜单数据生成器**:
+- 随机但现实的菜品名称和描述
+- 各种餐次类型和时间组合
+- 边界情况，如单餐或全天菜单
+- 不同的日期范围和可用性模式
 
-## Implementation Technologies
+## 实现技术
 
-### Frontend Stack
-- **Framework**: React 18 with TypeScript
-- **Styling**: Bootstrap 5 with custom CSS modules
-- **Date Handling**: react-datepicker for date selection
-- **HTTP Client**: Axios for API communication
-- **State Management**: React hooks (useState, useEffect, useContext)
-- **Build Tool**: Vite for fast development and building
+### 前端技术栈
+- **框架**: React 18配合TypeScript
+- **样式**: Bootstrap 5配合自定义CSS模块
+- **日期处理**: react-datepicker用于日期选择
+- **HTTP客户端**: Axios用于API通信
+- **状态管理**: React hooks (useState, useEffect, useContext)
+- **构建工具**: Vite用于快速开发和构建
 
-### Backend Stack
-- **Framework**: Flask 2.3 with Python 3.9+
-- **Excel Processing**: pandas and openpyxl for file parsing
-- **File Handling**: Werkzeug for secure file uploads
-- **API Documentation**: Flask-RESTX for OpenAPI documentation
-- **CORS**: Flask-CORS for cross-origin requests
-- **Validation**: marshmallow for request/response validation
+### 后端技术栈
+- **框架**: Flask 2.3配合Python 3.9+
+- **Excel处理**: pandas和openpyxl用于文件解析
+- **文件处理**: Werkzeug用于安全文件上传
+- **API文档**: Flask-RESTX用于OpenAPI文档
+- **跨域**: Flask-CORS用于跨域请求
+- **验证**: marshmallow用于请求/响应验证
 
-### Development Tools
-- **Testing**: pytest (backend), Jest (frontend)
-- **Property Testing**: Hypothesis (backend), fast-check (frontend)
-- **Code Quality**: ESLint, Prettier (frontend), Black, flake8 (backend)
-- **Type Checking**: TypeScript (frontend), mypy (backend)
+### 开发工具
+- **测试**: pytest (后端), Jest (前端)
+- **属性测试**: Hypothesis (后端), fast-check (前端)
+- **代码质量**: ESLint, Prettier (前端), Black, flake8 (后端)
+- **类型检查**: TypeScript (前端), mypy (后端)

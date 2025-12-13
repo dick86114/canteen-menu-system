@@ -60,6 +60,7 @@ RUN mkdir -p /app/menu
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 ENV PYTHONPATH=/app
+ENV TZ=Asia/Shanghai
 
 # 暴露端口
 EXPOSE 5000

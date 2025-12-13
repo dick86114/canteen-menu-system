@@ -179,8 +179,9 @@ class ExcelParser:
         
         # Generate dates for the week based on current year
         from datetime import datetime, timedelta
+        from ..utils.timezone import current_year
         # Use current year and determine the Monday of the week
-        current_year = datetime.now().year
+        current_year_val = current_year()
         
         # Try to extract date range from filename if available
         # Look for patterns like "12月8-12" or "12月15-19"
@@ -191,7 +192,7 @@ class ExcelParser:
         if date_match:
             month = int(date_match.group(1))
             start_day = int(date_match.group(2))
-            monday = datetime(current_year, month, start_day)
+            monday = datetime(current_year_val, month, start_day)
         else:
             # Default to December 8, 2025 if no pattern found
             monday = datetime(2025, 12, 8)

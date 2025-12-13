@@ -54,6 +54,8 @@ services:
       - ./menu:/app/menu
     environment:
       - FLASK_ENV=production
+      # 设置时区，可根据需要修改（如 America/New_York, Europe/London 等）
+      - TZ=Asia/Shanghai
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
@@ -93,6 +95,7 @@ cp your-menu-file.xlsx ./menu/
 |--------|--------|------|
 | FLASK_ENV | production | Flask运行环境 |
 | FLASK_APP | app.py | Flask应用入口 |
+| TZ | Asia/Shanghai | 时区设置 |
 
 ## 端口说明
 
@@ -146,6 +149,25 @@ docker exec canteen-menu ls -la /app/menu/
 docker network ls
 docker inspect canteen-menu
 ```
+
+### 4. 时区问题
+
+如果发现时间显示不正确，可以设置正确的时区：
+```bash
+# 在docker-compose.yml中设置时区
+environment:
+  - TZ=Asia/Shanghai      # 中国标准时间
+  - TZ=America/New_York   # 美国东部时间
+  - TZ=Europe/London      # 英国时间
+  - TZ=Asia/Tokyo         # 日本标准时间
+```
+
+常用时区列表：
+- `Asia/Shanghai` - 中国标准时间 (UTC+8)
+- `America/New_York` - 美国东部时间
+- `Europe/London` - 英国时间
+- `Asia/Tokyo` - 日本标准时间
+- `UTC` - 协调世界时
 
 ## 更新镜像
 

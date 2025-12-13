@@ -11,6 +11,8 @@ services:
       - ./menu:/app/menu
     environment:
       - FLASK_ENV=production
+      # 设置时区为中国标准时间，可根据需要修改
+      - TZ=Asia/Shanghai
     restart: always
     network_mode: bridge
     healthcheck:

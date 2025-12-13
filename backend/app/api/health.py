@@ -35,7 +35,8 @@ class HealthResource(Resource):
         """
         try:
             # Basic health check
-            current_time = datetime.now()
+            from ..utils.timezone import now
+            current_time = now()
             
             # Check dependent services (can be extended)
             services_status = {
@@ -57,9 +58,10 @@ class HealthResource(Resource):
             }
             
         except Exception as e:
+            from ..utils.timezone import format_datetime
             return {
                 'status': 'unhealthy',
-                'timestamp': datetime.now().isoformat(),
+                'timestamp': format_datetime(),
                 'error': str(e)
             }, 500
 
@@ -75,7 +77,8 @@ class PingResource(Resource):
         
         Returns a basic pong response for connectivity testing.
         """
+        from ..utils.timezone import format_datetime
         return {
             'message': 'pong',
-            'timestamp': datetime.now().isoformat()
+            'timestamp': format_datetime()
         }
