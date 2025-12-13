@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月历选择器演示 - 食堂菜单系统</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            box-shadow: var(--shadow-lg);
+            padding: var(--space-4) 0;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-white) !important;
+        }
+
+        .demo-section {
+            margin-bottom: var(--space-8);
+        }
+
+        .demo-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+            text-align: center;
+        }
+
+        .feature-highlight {
+            background: linear-gradient(135deg, var(--info-color), var(--accent-color));
+            color: var(--text-white);
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4);
+        }
+
+        /* 月历组件样式 */
+        .calendar-view {
+            padding: var(--space-4);
+            background: var(--bg-card);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-4);
+            padding: 0 var(--space-2);
+        }
+
+        .calendar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .calendar-nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .calendar-nav-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: var(--bg-tertiary);
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            margin-bottom: var(--space-2);
+            background: var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .calendar-weekday {
+            background: var(--bg-tertiary);
+            padding: var(--space-2);
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .calendar-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            background: var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: var(--space-4);
+        }
+
+        .calendar-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+        }
+
+        .calendar-day {
+            background: var(--bg-primary);
+            border: none;
+            padding: var(--space-2);
+            min-height: 44px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .calendar-day.other-month {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+        }
+
+        .calendar-day.other-month:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .calendar-day.today {
+            background: var(--info-color);
+            color: var(--text-white);
+            font-weight: 700;
+        }
+
+        .calendar-day.today:hover {
+            background: var(--primary-light);
+        }
+
+        .calendar-day.selected {
+            background: var(--primary-color);
+            color: var(--text-white);
+            font-weight: 700;
+        }
+
+        .calendar-day.selected:hover {
+            background: var(--primary-dark);
+        }
+
+        .calendar-day.has-menu .calendar-day-number {
+            font-weight: 600;
+        }
+
+        .calendar-day-number {
+            font-size: 0.875rem;
+            line-height: 1;
+        }
+
+        .calendar-day-indicator {
+            font-size: 0.5rem;
+            line-height: 1;
+            margin-top: 2px;
+            color: var(--success-color);
+        }
+
+        .calendar-day.selected .calendar-day-indicator,
+        .calendar-day.today .calendar-day-indicator {
+            color: currentColor;
+        }
+
+        .calendar-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: var(--space-3);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .calendar-legend {
+            display: flex;
+            gap: var(--space-4);
+            font-size: 0.875rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .legend-dot.has-menu {
+            background: var(--success-color);
+        }
+
+        .legend-dot.today {
+            background: var(--info-color);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+            margin-top: var(--space-6);
+        }
+
+        .comparison-item {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: var(--space-4);
+            border: 1px solid var(--border-color);
+        }
+
+        .comparison-label {
+            font-weight: 600;
+            margin-bottom: var(--space-3);
+            padding: var(--space-3);
+            border-radius: var(--radius-lg);
+            text-align: center;
+        }
+
+        .before {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .after {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-calendar-week me-2"></i>
+                食堂菜单系统 - 月历选择器演示
+            </a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="demo-section">
+            <h1 class="demo-title">📅 全新月历选择器</h1>
+            <div class="feature-highlight">
+                <h5><i class="bi bi-calendar3 me-2"></i>功能升级</h5>
+                <p class="mb-0">
+                    将原来的日期列表改为直观的月历界面，用户可以像使用日历一样选择任意日期，
+                    更符合用户的使用习惯，同时清晰显示哪些日期有菜单数据。
+                </p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🎯 月历界面预览</h2>
+            <div class="calendar-view">
+                <!-- 月份导航 -->
+                <div class="calendar-header">
+                    <button class="calendar-nav-btn" title="上个月">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <h4 class="calendar-title">2025年12月</h4>
+                    <button class="calendar-nav-btn" title="下个月">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- 星期标题 -->
+                <div class="calendar-weekdays">
+                    <div class="calendar-weekday">一</div>
+                    <div class="calendar-weekday">二</div>
+                    <div class="calendar-weekday">三</div>
+                    <div class="calendar-weekday">四</div>
+                    <div class="calendar-weekday">五</div>
+                    <div class="calendar-weekday">六</div>
+                    <div class="calendar-weekday">日</div>
+                </div>
+
+                <!-- 日期网格 -->
+                <div class="calendar-grid">
+                    <!-- 第一周 -->
+                    <div class="calendar-week">
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">25</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">26</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">27</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">28</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">29</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">30</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">1</span>
+                        </div>
+                    </div>
+                    <!-- 第二周 -->
+                    <div class="calendar-week">
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">2</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">3</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">4</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">5</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">6</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">7</span>
+                        </div>
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">8</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                    </div>
+                    <!-- 第三周 -->
+                    <div class="calendar-week">
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">9</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">10</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">11</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">12</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">13</span>
+                        </div>
+                        <div class="calendar-day today">
+                            <span class="calendar-day-number">14</span>
+                        </div>
+                        <div class="calendar-day has-menu selected">
+                            <span class="calendar-day-number">15</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                    </div>
+                    <!-- 第四周 -->
+                    <div class="calendar-week">
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">16</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">17</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">18</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                        <div class="calendar-day has-menu">
+                            <span class="calendar-day-number">19</span>
+                            <span class="calendar-day-indicator">●</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">20</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">21</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">22</span>
+                        </div>
+                    </div>
+                    <!-- 第五周 -->
+                    <div class="calendar-week">
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">23</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">24</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">25</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">26</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">27</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">28</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">29</span>
+                        </div>
+                    </div>
+                    <!-- 第六周 -->
+                    <div class="calendar-week">
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">30</span>
+                        </div>
+                        <div class="calendar-day">
+                            <span class="calendar-day-number">31</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">1</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">2</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">3</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">4</span>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <span class="calendar-day-number">5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部操作 -->
+                <div class="calendar-footer">
+                    <div class="calendar-legend">
+                        <span class="legend-item">
+                            <span class="legend-dot has-menu"></span>
+                            有菜单
+                        </span>
+                        <span class="legend-item">
+                            <span class="legend-dot today"></span>
+                            今天
+                        </span>
+                    </div>
+                    <button class="btn btn-secondary btn-sm">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🔄 功能对比</h2>
+            <div class="comparison-grid">
+                <!-- 修改前 -->
+                <div class="comparison-item">
+                    <div class="comparison-label before">修改前</div>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">❌ 简单的日期列表</li>
+                        <li class="mb-2">❌ 只能选择有菜单的日期</li>
+                        <li class="mb-2">❌ 不够直观</li>
+                        <li class="mb-2">❌ "今天"按钮跳转到最近日期</li>
+                    </ul>
+                </div>
+
+                <!-- 修改后 -->
+                <div class="comparison-item">
+                    <div class="comparison-label after">修改后</div>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">✅ 直观的月历界面</li>
+                        <li class="mb-2">✅ 可以选择任意日期</li>
+                        <li class="mb-2">✅ 清晰显示菜单状态</li>
+                        <li class="mb-2">✅ "今天"按钮直接跳转到今天</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">✨ 新功能特性</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="bi bi-calendar3 me-2"></i>
+                                月历界面
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li>✅ 标准的月历布局</li>
+                                <li>✅ 月份导航按钮</li>
+                                <li>✅ 清晰的星期标题</li>
+                                <li>✅ 直观的日期网格</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">
+                                <i class="bi bi-eye me-2"></i>
+                                视觉指示
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li>✅ 绿点标记有菜单的日期</li>
+                                <li>✅ 蓝色高亮今天</li>
+                                <li>✅ 主色调显示选中日期</li>
+                                <li>✅ 灰色显示其他月份</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🎯 用户体验提升</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-hand-index display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">直观操作</h5>
+                            <p class="card-text">像使用普通日历一样点击选择日期</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-eye-fill display-4 text-success mb-3"></i>
+                            <h5 class="card-title">状态清晰</h5>
+                            <p class="card-text">一目了然地看到哪些日期有菜单</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-phone display-4 text-info mb-3"></i>
+                            <h5 class="card-title">移动友好</h5>
+                            <p class="card-text">针对触摸操作优化的按钮尺寸</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <h5><i class="bi bi-rocket me-2"></i>立即体验</h5>
+            <p class="mb-3">
+                访问 <strong>http://localhost:3001/</strong> 并点击"月历"按钮体验新功能！
+            </p>
+            <p class="mb-0">
+                现在你可以：
+            </p>
+            <ul class="mb-0">
+                <li>点击"今天"按钮直接跳转到今天（12月14日）</li>
+                <li>点击"月历"按钮打开月历选择器</li>
+                <li>在月历中选择任意日期，包括没有菜单的日期</li>
+                <li>通过绿点快速识别哪些日期有菜单数据</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 添加交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 月历日期点击效果
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.addEventListener('click', function() {
+                    // 移除其他选中状态
+                    document.querySelectorAll('.calendar-day.selected').forEach(d => {
+                        d.classList.remove('selected');
+                    });
+                    
+                    // 添加选中状态
+                    if (!this.classList.contains('other-month')) {
+                        this.classList.add('selected');
+                    }
+                });
+            });
+
+            // 月份导航
+            document.querySelectorAll('.calendar-nav-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 模拟月份切换效果
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+
+            // 添加滚动动画
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // 观察所有卡片
+            document.querySelectorAll('.card, .comparison-item').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

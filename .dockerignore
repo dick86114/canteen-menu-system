@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Node modules
+frontend/node_modules
+frontend/dist
+
+# Python
+backend/__pycache__
+backend/.pytest_cache
+backend/venv
+backend/.env
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test files
+frontend/src/**/*.test.*
+backend/tests/
+
+# Demo files
+frontend/*-demo.html
+
+# Spec files
+.kiro/

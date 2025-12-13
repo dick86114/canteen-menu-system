@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动端UI预览 - 食堂菜单系统</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        /* 导入主要样式变量 */
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-dark: #0f172a;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-white: #ffffff;
+            --text-on-primary: #ffffff;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            box-shadow: var(--shadow-lg);
+            padding: var(--space-4) 0;
+        }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-on-primary) !important;
+        }
+
+        /* 日期选择器样式 */
+        .date-selector {
+            background: var(--bg-card);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-4);
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .date-navigation {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+
+        .date-nav-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-xl);
+            border: 2px solid var(--primary-color);
+            background: var(--primary-color);
+            color: var(--text-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            font-size: 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .date-nav-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .date-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: var(--bg-tertiary);
+            border-color: var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .current-date {
+            flex: 1;
+            text-align: center;
+        }
+
+        .current-date h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+            line-height: 1.3;
+        }
+
+        .current-date .date-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .date-actions {
+            display: flex;
+            gap: var(--space-2);
+            justify-content: stretch;
+            width: 100%;
+        }
+
+        .date-quick-btn {
+            flex: 1;
+            text-align: center;
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        .date-quick-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* 日期范围提示 */
+        .date-range-info {
+            background: linear-gradient(135deg, var(--info-color), var(--accent-color));
+            color: var(--text-white);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: var(--space-4);
+            box-shadow: var(--shadow-sm);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-section {
+            margin-bottom: var(--space-8);
+        }
+
+        .preview-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+            text-align: center;
+        }
+
+        .device-frame {
+            max-width: 375px;
+            margin: 0 auto;
+            background: #000;
+            border-radius: 25px;
+            padding: 20px 10px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .device-screen {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+            margin-top: var(--space-6);
+        }
+
+        .comparison-item {
+            text-align: center;
+        }
+
+        .comparison-label {
+            font-weight: 600;
+            margin-bottom: var(--space-3);
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+        }
+
+        .before {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .after {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        /* 旧样式模拟 */
+        .old-style .date-nav-btn {
+            border: 2px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+
+        .old-style .date-range-info {
+            font-size: 0.75rem;
+            font-weight: normal;
+            padding: var(--space-2) var(--space-3);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+                gap: var(--space-4);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-calendar-week me-2"></i>
+                食堂菜单系统 - 移动端UI预览
+            </a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="preview-section">
+            <h2 class="preview-title">🎨 UI优化对比</h2>
+            <p class="text-center text-muted mb-4">
+                修复了移动端导航箭头显示问题和文字对比度问题
+            </p>
+
+            <div class="comparison">
+                <!-- 修复前 -->
+                <div class="comparison-item">
+                    <div class="comparison-label before">修复前</div>
+                    <div class="device-frame">
+                        <div class="device-screen">
+                            <div class="date-selector old-style">
+                                <div class="date-navigation">
+                                    <button class="date-nav-btn">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <div class="current-date">
+                                        <h3>2025年12月9日星期二</h3>
+                                        <div class="date-meta">第 2 天 / 共 10 天</div>
+                                    </div>
+                                    <button class="date-nav-btn">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                                <div class="date-actions">
+                                    <button class="date-quick-btn">
+                                        <i class="bi bi-skip-start me-1"></i>
+                                        第一天
+                                    </button>
+                                    <button class="date-quick-btn">
+                                        <i class="bi bi-house me-1"></i>
+                                        今天
+                                    </button>
+                                    <button class="date-quick-btn">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        选择
+                                    </button>
+                                    <button class="date-quick-btn">
+                                        <i class="bi bi-skip-end me-1"></i>
+                                        最后一天
+                                    </button>
+                                </div>
+                                <div class="date-range-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    可用日期：12月7日周日 至 12月18日周四 （共 10 天）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-danger">
+                            ❌ 箭头按钮不够突出<br>
+                            ❌ 文字对比度不足
+                        </small>
+                    </div>
+                </div>
+
+                <!-- 修复后 -->
+                <div class="comparison-item">
+                    <div class="comparison-label after">修复后</div>
+                    <div class="device-frame">
+                        <div class="device-screen">
+                            <div class="date-selector">
+                                <div class="date-navigation">
+                                    <button class="date-nav-btn">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <div class="current-date">
+                                        <h3>2025年12月9日星期二</h3>
+                                        <div class="date-meta">第 2 天 / 共 10 天</div>
+                                    </div>
+                                    <button class="date-nav-btn">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                                <div class="date-actions">
+                                    <button class="date-quick-btn">
+                                        <i class="bi bi-skip-start me-1"></i>
+                                        第一天
+                                    </button>
+                                    <button class="date-quick-btn">
+                                        <i class="bi bi-house me-1"></i>
+                                        今天
+                                    </button>
+                                    <button class="date-quick-btn">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        选择
+                                    </button>
+                                    <button class="date-quick-btn">
+                                        <i class="bi bi-skip-end me-1"></i>
+                                        最后一天
+                                    </button>
+                                </div>
+                                <div class="date-range-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    可用日期：12月7日周日 至 12月18日周四 （共 10 天）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-success">
+                            ✅ 箭头按钮更加突出<br>
+                            ✅ 文字对比度增强
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <h3 class="preview-title">🔧 修复内容</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="bi bi-arrow-left-right me-2"></i>
+                                导航箭头优化
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li>✅ 使用主色调背景，提高可见性</li>
+                                <li>✅ 增加按钮尺寸，便于触摸操作</li>
+                                <li>✅ 添加悬停效果和阴影</li>
+                                <li>✅ 优化禁用状态的视觉反馈</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">
+                                <i class="bi bi-type me-2"></i>
+                                文字对比度增强
+                            </h5>
+                            <ul class="list-unstyled">
+                                <li>✅ 增加字体粗细到600</li>
+                                <li>✅ 调整字体大小，提高可读性</li>
+                                <li>✅ 添加文字阴影效果</li>
+                                <li>✅ 优化移动端字体尺寸</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <h5><i class="bi bi-lightbulb me-2"></i>技术说明</h5>
+            <p class="mb-0">
+                这些修改通过CSS变量和响应式设计实现，确保在不同设备上都有良好的用户体验。
+                所有修改都经过了测试验证，不会影响现有功能。
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 添加交互效果
+        document.querySelectorAll('.date-nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 模拟点击反馈
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+
+        document.querySelectorAll('.date-quick-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 模拟选中状态
+                document.querySelectorAll('.date-quick-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
