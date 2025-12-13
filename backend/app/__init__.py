@@ -26,13 +26,7 @@ def create_app(config_name: str = "development") -> Flask:
     else:
         CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"])
     
-    # Configure file upload settings and size limits
-    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), '..', 'uploads')
-    app.config['ALLOWED_EXTENSIONS'] = {'xlsx'}
-    
-    # Ensure upload directory exists
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
     
     # 静态文件服务（生产环境）- 必须在API之前注册
     static_folder = os.path.join(os.path.dirname(__file__), '..', 'static')
@@ -84,11 +78,10 @@ def create_app(config_name: str = "development") -> Flask:
         return "", 204
     
     # 注册API蓝图 - 在静态文件路由之后
-    from app.api import menu_bp, upload_bp
+    from app.api import menu_bp
     from app.api.health import health_bp
     from app.api.scanner import scanner_bp
     app.register_blueprint(menu_bp)
-    app.register_blueprint(upload_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(scanner_bp)
     
@@ -129,15 +122,3 @@ def create_app(config_name: str = "development") -> Flask:
     return app
 
 
-def allowed_file(filename: str) -> bool:
-    """
-    Check if uploaded file has allowed extension.
-    
-    Args:
-        filename: Name of the uploaded file
-        
-    Returns:
-        True if file extension is allowed, False otherwise
-    """
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in {'xlsx'}

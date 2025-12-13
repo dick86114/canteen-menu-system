@@ -18,12 +18,6 @@ export interface MenuData {
   meals: Meal[];
 }
 
-export interface UploadResponse {
-  status: 'success' | 'error';
-  message: string;
-  data?: MenuData[];
-}
-
 export interface MenuResponse {
   date: string;
   meals: Meal[];
@@ -38,5 +32,3 @@ export interface DatesResponse {
     end: string;
   };
 }
-
-export type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';

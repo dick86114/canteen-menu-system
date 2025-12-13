@@ -6,7 +6,7 @@ import App from '../../App';
 jest.mock('../../services/api', () => ({
   getAvailableDates: jest.fn().mockResolvedValue({ dates: [] }),
   getMenuByDate: jest.fn().mockResolvedValue({ date: '', meals: [] }),
-  uploadMenuFile: jest.fn(),
+
   handleApiError: jest.fn().mockReturnValue('测试错误')
 }));
 

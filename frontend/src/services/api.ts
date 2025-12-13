@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { UploadResponse, MenuResponse, DatesResponse } from '../types';
+import { MenuResponse, DatesResponse } from '../types';
 
 // API 基础配置
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
@@ -76,38 +76,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// 文件上传 API - 带重试和进度回调
-export const uploadMenuFile = async (
-  file: File,
-  onProgress?: (progress: number) => void
-): Promise<UploadResponse> => {
-  const formData = new FormData();
-  formData.append('file', file);
-
-  return requestWithRetry(async () => {
-    const response = await api.post<UploadResponse>('/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      onUploadProgress: (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          onProgress(progress);
-        }
-      },
-    });
-
-    return response.data;
-  }, {
-    retries: 2, // 文件上传重试次数较少
-    retryDelay: 2000,
-    retryCondition: (error: AxiosError) => {
-      // 文件上传只对网络错误重试，不对4xx错误重试
-      return !error.response || error.response.status >= 500;
-    }
-  });
-};
 
 // 获取指定日期的菜单 - 带重试
 export const getMenuByDate = async (date: string): Promise<MenuResponse> => {

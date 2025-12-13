@@ -224,16 +224,46 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   // 导航到前一天
   const navigateToPrevious = () => {
     const currentIndex = availableDates.indexOf(selectedDate);
+    
     if (currentIndex > 0) {
+      // 如果当前日期在可用日期列表中，跳转到前一个可用日期
       onDateChange(availableDates[currentIndex - 1]);
+    } else if (currentIndex === -1) {
+      // 如果当前日期不在可用日期列表中，找到最接近的前一个日期
+      const currentDate = parseDate(selectedDate);
+      const sortedDates = [...availableDates].sort();
+      
+      // 找到第一个小于当前日期的可用日期
+      for (let i = sortedDates.length - 1; i >= 0; i--) {
+        const availableDate = parseDate(sortedDates[i]);
+        if (availableDate < currentDate) {
+          onDateChange(sortedDates[i]);
+          return;
+        }
+      }
     }
   };
 
   // 导航到后一天
   const navigateToNext = () => {
     const currentIndex = availableDates.indexOf(selectedDate);
-    if (currentIndex < availableDates.length - 1) {
+    
+    if (currentIndex >= 0 && currentIndex < availableDates.length - 1) {
+      // 如果当前日期在可用日期列表中，跳转到后一个可用日期
       onDateChange(availableDates[currentIndex + 1]);
+    } else if (currentIndex === -1) {
+      // 如果当前日期不在可用日期列表中，找到最接近的后一个日期
+      const currentDate = parseDate(selectedDate);
+      const sortedDates = [...availableDates].sort();
+      
+      // 找到第一个大于当前日期的可用日期
+      for (let i = 0; i < sortedDates.length; i++) {
+        const availableDate = parseDate(sortedDates[i]);
+        if (availableDate > currentDate) {
+          onDateChange(sortedDates[i]);
+          return;
+        }
+      }
     }
   };
 
@@ -287,9 +317,43 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     return availableDates.indexOf(selectedDate);
   };
 
+  // 判断是否可以导航到前一天
+  const canNavigatePrevious = (): boolean => {
+    const currentIndex = availableDates.indexOf(selectedDate);
+    
+    if (currentIndex > 0) {
+      return true; // 在列表中且不是第一个
+    } else if (currentIndex === -1) {
+      // 不在列表中，检查是否有更早的日期
+      const currentDate = parseDate(selectedDate);
+      const sortedDates = [...availableDates].sort();
+      
+      return sortedDates.some(dateStr => parseDate(dateStr) < currentDate);
+    }
+    
+    return false;
+  };
+
+  // 判断是否可以导航到后一天
+  const canNavigateNext = (): boolean => {
+    const currentIndex = availableDates.indexOf(selectedDate);
+    
+    if (currentIndex >= 0 && currentIndex < availableDates.length - 1) {
+      return true; // 在列表中且不是最后一个
+    } else if (currentIndex === -1) {
+      // 不在列表中，检查是否有更晚的日期
+      const currentDate = parseDate(selectedDate);
+      const sortedDates = [...availableDates].sort();
+      
+      return sortedDates.some(dateStr => parseDate(dateStr) > currentDate);
+    }
+    
+    return false;
+  };
+
   const currentIndex = getCurrentDateIndex();
-  const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < availableDates.length - 1;
+  const hasPrevious = canNavigatePrevious();
+  const hasNext = canNavigateNext();
   const dateRangeInfo = getDateRangeInfo();
 
   if (loading) {
@@ -331,7 +395,11 @@ const DateSelector: React.FC<DateSelectorProps> = ({
         <div className="current-date">
           <h3>{formatDisplayDate(selectedDate)}</h3>
           <div className="date-meta">
-            第 {currentIndex + 1} 天 / 共 {availableDates.length} 天
+            {currentIndex >= 0 ? (
+              `第 ${currentIndex + 1} 天 / 共 ${availableDates.length} 天`
+            ) : (
+              `共 ${availableDates.length} 天菜单数据`
+            )}
           </div>
         </div>
 

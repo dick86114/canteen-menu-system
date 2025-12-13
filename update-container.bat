@@ -1,29 +1,27 @@
 @echo off
-chcp 65001 >nul
-echo 🔄 更新容器到最新版本
+echo 🔄 更新容器到最新版本...
+echo ================================
 
-echo.
-echo 1. 停止当前容器...
+echo 📥 拉取最新镜像...
+docker-compose -f compose.yaml pull
+
+echo 🛑 停止当前容器...
 docker-compose -f compose.yaml down
 
-echo.
-echo 2. 拉取最新镜像...
-docker pull ghcr.io/dick86114/canteen-menu-system:latest
-
-echo.
-echo 3. 重新启动容器...
+echo 🚀 启动新容器...
 docker-compose -f compose.yaml up -d
 
-echo.
-echo 4. 等待容器启动...
-timeout /t 10
+echo ⏳ 等待容器启动...
+timeout /t 15 /nobreak >nul
+
+echo 🧪 测试健康状态...
+curl -s http://localhost:1214/api/health
 
 echo.
-echo 5. 检查容器状态...
-docker ps | findstr canteen-menu
+echo 🔍 检查扫描状态...
+curl -s http://localhost:1214/api/scanner/status
 
 echo.
-echo 6. 测试API...
-curl http://localhost:1214/api/health
-
+echo ✅ 容器更新完成！
+echo 现在可以访问 http://192.168.31.60:1214 测试刷新功能。
 pause

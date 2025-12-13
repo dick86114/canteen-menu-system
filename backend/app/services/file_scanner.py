@@ -25,7 +25,16 @@ class FileScanner:
         """
         if menu_directory is None:
             # 在容器环境中使用固定路径 /app/menu
-            menu_directory = '/app/menu'
+            # 检查环境变量，但确保路径正确
+            menu_directory = os.environ.get('MENU_DIRECTORY', '/app/menu')
+            
+            # 确保路径是绝对路径且指向正确位置
+            if not menu_directory.startswith('/'):
+                menu_directory = '/app/menu'
+            
+            # 如果路径是 /menu，修正为 /app/menu
+            if menu_directory == '/menu':
+                menu_directory = '/app/menu'
         
         self.menu_directory = menu_directory
         self.excel_parser = ExcelParser()
