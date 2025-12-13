@@ -20,8 +20,11 @@ def create_app(config_name: str = "development") -> Flask:
     """
     app = Flask(__name__)
     
-    # Configure CORS
-    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"])
+    # Configure CORS - 生产环境允许所有来源
+    if config_name == "production":
+        CORS(app, origins="*")
+    else:
+        CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"])
     
     # Configure file upload settings and size limits
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -60,9 +63,19 @@ def create_app(config_name: str = "development") -> Flask:
         else:
             return {"message": "食堂菜单系统后端服务运行中", "status": "ok"}, 200
     
+    @app.route('/static/<path:filename>')
+    def serve_static_files(filename):
+        """服务静态资源文件"""
+        return send_from_directory(static_folder, filename)
+    
     @app.route('/<path:path>')
-    def serve_static(path):
-        """服务静态文件"""
+    def serve_spa(path):
+        """服务SPA路由，但排除API路径"""
+        # 排除API路径
+        if path.startswith('api/'):
+            return {"error": "API endpoint not found"}, 404
+            
+        # 检查是否是静态文件
         if os.path.exists(os.path.join(static_folder, path)):
             return send_from_directory(static_folder, path)
         else:
