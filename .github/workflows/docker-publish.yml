@@ -64,18 +64,7 @@ jobs:
     - name: 检出代码
       uses: actions/checkout@v4
 
-    - name: 设置Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
 
-    - name: 构建前端
-      run: |
-        cd frontend
-        npm ci
-        npm run build
 
     - name: 设置Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -105,7 +94,7 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: .
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/amd64
         push: ${{ github.event_name != 'pull_request' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
