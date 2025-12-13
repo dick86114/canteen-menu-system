@@ -3,7 +3,7 @@ import { UploadResponse, MenuResponse, DatesResponse } from '../types';
 
 // API 基础配置
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'http://localhost:5000/api'  // 生产环境使用绝对URL
+  ? '/api'  // 生产环境使用相对路径，让浏览器使用当前域名和端口
   : '/api';  // 开发环境使用相对路径，利用Vite代理
 
 const api = axios.create({
