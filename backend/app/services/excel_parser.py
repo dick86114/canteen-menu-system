@@ -53,7 +53,7 @@ class ExcelParser:
     
     def __init__(self):
         """Initialize the Excel parser."""
-        self.supported_extensions = {'.xlsx', '.xls'}
+        self.supported_extensions = {'.xlsx', '.xls', '.csv'}
     
     def validate_file_format(self, file_path: Union[str, Path]) -> bool:
         """
@@ -92,24 +92,32 @@ class ExcelParser:
             # Store filename for date extraction
             self._current_filename = os.path.basename(str(file_path))
             
-            # Try to load the workbook first to check if it's a valid Excel file
-            workbook = None
-            try:
-                workbook = load_workbook(file_path, read_only=True)
-                # Close workbook immediately after validation
-                workbook.close()
-            except Exception as e:
-                if workbook:
-                    workbook.close()
-                raise e
+            # 检查文件扩展名
+            file_extension = Path(file_path).suffix.lower()
             
-            # Read the Excel file with pandas for easier data manipulation
-            # Use context manager to ensure proper file closure
-            with pd.ExcelFile(file_path) as excel_file:
-                df = pd.read_excel(excel_file, sheet_name=0)  # Read first sheet
+            if file_extension == '.csv':
+                # 读取CSV文件
+                df = pd.read_csv(file_path, encoding='utf-8')
+            else:
+                # 处理Excel文件
+                # Try to load the workbook first to check if it's a valid Excel file
+                workbook = None
+                try:
+                    workbook = load_workbook(file_path, read_only=True)
+                    # Close workbook immediately after validation
+                    workbook.close()
+                except Exception as e:
+                    if workbook:
+                        workbook.close()
+                    raise e
+                
+                # Read the Excel file with pandas for easier data manipulation
+                # Use context manager to ensure proper file closure
+                with pd.ExcelFile(file_path) as excel_file:
+                    df = pd.read_excel(excel_file, sheet_name=0)  # Read first sheet
             
             if df.empty:
-                raise ExcelParsingError("Excel file is empty")
+                raise ExcelParsingError("文件为空")
             
             return self._extract_menu_data(df)
             

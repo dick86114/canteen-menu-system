@@ -24,15 +24,32 @@ class FileScanner:
             menu_directory: 菜单文件目录路径，默认为/app/menu
         """
         if menu_directory is None:
-            # 在容器环境中使用固定路径 /app/menu
-            # 检查环境变量，但确保路径正确
-            menu_directory = os.environ.get('MENU_DIRECTORY', '/app/menu')
+            # 检查环境变量，支持本地开发和容器环境
+            menu_directory = os.environ.get('MENU_DIRECTORY')
             
-            # 确保路径是绝对路径且指向正确位置
-            if not menu_directory.startswith('/'):
-                menu_directory = '/app/menu'
+            if menu_directory is None:
+                # 自动检测环境
+                # 检查是否在Docker容器中（通过检查特定的容器环境标识）
+                is_container = (
+                    os.path.exists('/app') and 
+                    os.path.exists('/app/menu') and
+                    not os.path.exists('./backend')  # 本地开发环境会有backend目录
+                )
+                
+                if is_container:
+                    # 容器环境
+                    menu_directory = '/app/menu'
+                else:
+                    # 本地开发环境，从backend目录向上找到项目根目录的menu文件夹
+                    # 当前文件路径: backend/app/services/file_scanner.py
+                    # 项目根目录: ../../../
+                    # menu目录: ../../../menu
+                    current_dir = os.path.dirname(os.path.abspath(__file__))
+                    project_root = os.path.join(current_dir, '..', '..', '..')
+                    menu_directory = os.path.join(project_root, 'menu')
+                    menu_directory = os.path.abspath(menu_directory)
             
-            # 如果路径是 /menu，修正为 /app/menu
+            # 如果路径是 /menu，修正为 /app/menu（容器环境修复）
             if menu_directory == '/menu':
                 menu_directory = '/app/menu'
         
@@ -121,7 +138,8 @@ class FileScanner:
         """
         excel_patterns = [
             os.path.join(self.menu_directory, '*.xlsx'),
-            os.path.join(self.menu_directory, '*.xls')
+            os.path.join(self.menu_directory, '*.xls'),
+            os.path.join(self.menu_directory, '*.csv')  # 临时支持CSV文件用于本地测试
         ]
         
         excel_files = []

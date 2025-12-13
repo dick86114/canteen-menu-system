@@ -22,7 +22,7 @@ class TestExcelParser:
     
     def test_parser_initialization(self):
         """Test ExcelParser initialization."""
-        assert self.parser.supported_extensions == {'.xlsx', '.xls'}
+        assert self.parser.supported_extensions == {'.xlsx', '.xls', '.csv'}
         assert len(self.parser.DATE_FORMATS) > 0
         assert 'breakfast' in self.parser.MEAL_TYPE_MAPPINGS
         assert 'lunch' in self.parser.MEAL_TYPE_MAPPINGS
@@ -37,7 +37,7 @@ class TestExcelParser:
     def test_validate_file_format_invalid(self):
         """Test file format validation with invalid extensions."""
         assert self.parser.validate_file_format("test.txt") is False
-        assert self.parser.validate_file_format("test.csv") is False
+        assert self.parser.validate_file_format("test.json") is False
         assert self.parser.validate_file_format("test.pdf") is False
         assert self.parser.validate_file_format("test") is False
     
@@ -193,7 +193,7 @@ class TestExcelParser:
         wb.close()  # Close workbook before testing
         
         try:
-            with pytest.raises(ExcelParsingError, match="Excel file is empty"):
+            with pytest.raises(ExcelParsingError, match="文件为空"):
                 self.parser.parse_excel_file(file_path)
         finally:
             try:

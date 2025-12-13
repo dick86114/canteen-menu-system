@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 scanner_bp = Blueprint('scanner', __name__, url_prefix='/api/scanner')
 api = Api(scanner_bp, doc='/scanner/', title='文件扫描API', description='自动扫描和加载菜单文件')
 
-# 创建文件扫描器实例，显式指定正确的菜单目录路径
-file_scanner = FileScanner('/app/menu')
+# 创建文件扫描器实例，使用自动路径检测
+file_scanner = FileScanner()
 
 # API模型定义
 scan_result_model = api.model('ScanResult', {
