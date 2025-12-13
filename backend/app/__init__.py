@@ -58,10 +58,27 @@ def create_app(config_name: str = "development") -> Flask:
     @app.route('/')
     def serve_index():
         """服务前端主页"""
-        if os.path.exists(os.path.join(static_folder, 'index.html')):
+        print(f"DEBUG: 静态文件目录: {static_folder}")
+        print(f"DEBUG: 目录是否存在: {os.path.exists(static_folder)}")
+        if os.path.exists(static_folder):
+            print(f"DEBUG: 目录内容: {os.listdir(static_folder)}")
+        
+        index_path = os.path.join(static_folder, 'index.html')
+        print(f"DEBUG: index.html路径: {index_path}")
+        print(f"DEBUG: index.html是否存在: {os.path.exists(index_path)}")
+        
+        if os.path.exists(index_path):
             return send_from_directory(static_folder, 'index.html')
         else:
-            return {"message": "食堂菜单系统后端服务运行中", "status": "ok"}, 200
+            return {
+                "message": "食堂菜单系统后端服务运行中", 
+                "status": "ok",
+                "debug": {
+                    "static_folder": static_folder,
+                    "static_exists": os.path.exists(static_folder),
+                    "static_contents": os.listdir(static_folder) if os.path.exists(static_folder) else "目录不存在"
+                }
+            }, 200
     
     @app.route('/static/<path:filename>')
     def serve_static_files(filename):
