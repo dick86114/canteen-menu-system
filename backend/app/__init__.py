@@ -34,25 +34,7 @@ def create_app(config_name: str = "development") -> Flask:
     # Ensure upload directory exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
-    # Initialize Flask-RESTX API
-    api = Api(
-        app,
-        version='1.0',
-        title='Canteen Menu System API',
-        description='API for managing and displaying canteen menus',
-        doc='/api/docs/'
-    )
-    
-    # Register blueprints
-    from app.api import menu_bp, upload_bp
-    from app.api.health import health_bp
-    from app.api.scanner import scanner_bp
-    app.register_blueprint(menu_bp)
-    app.register_blueprint(upload_bp)
-    app.register_blueprint(health_bp)
-    app.register_blueprint(scanner_bp)
-    
-    # 静态文件服务（生产环境）
+    # 静态文件服务（生产环境）- 必须在API之前注册
     static_folder = os.path.join(os.path.dirname(__file__), '..', 'static')
     
     # 确保静态文件目录存在
@@ -60,7 +42,31 @@ def create_app(config_name: str = "development") -> Flask:
         print(f"WARNING: 静态文件目录不存在: {static_folder}")
         os.makedirs(static_folder, exist_ok=True)
     
-    # 注册静态文件路由 - 必须在API路由之后注册
+    # 根路径路由 - 最高优先级，必须在API注册之前
+    @app.route('/')
+    def serve_index():
+        """服务前端主页"""
+        index_path = os.path.join(static_folder, 'index.html')
+        print(f"DEBUG: 根路径请求，尝试服务index.html: {index_path}")
+        print(f"DEBUG: 文件存在: {os.path.exists(index_path)}")
+        
+        if os.path.exists(index_path):
+            print("DEBUG: 成功返回index.html文件")
+            return send_from_directory(static_folder, 'index.html')
+        else:
+            print("DEBUG: index.html不存在，返回调试信息")
+            return {
+                "message": "食堂菜单系统后端服务运行中", 
+                "status": "ok",
+                "debug": {
+                    "static_folder": static_folder,
+                    "static_exists": os.path.exists(static_folder),
+                    "static_contents": os.listdir(static_folder) if os.path.exists(static_folder) else "目录不存在",
+                    "index_path": index_path
+                }
+            }, 200
+    
+    # 静态资源路由
     @app.route('/assets/<path:filename>')
     def serve_assets(filename):
         """服务静态资源文件"""
@@ -77,29 +83,23 @@ def create_app(config_name: str = "development") -> Flask:
             return send_from_directory(static_folder, 'favicon.ico')
         return "", 204
     
-    # 根路径路由 - 最高优先级
-    @app.route('/')
-    def serve_index():
-        """服务前端主页"""
-        index_path = os.path.join(static_folder, 'index.html')
-        print(f"DEBUG: 尝试服务index.html: {index_path}")
-        print(f"DEBUG: 文件存在: {os.path.exists(index_path)}")
-        
-        if os.path.exists(index_path):
-            print("DEBUG: 返回index.html文件")
-            return send_from_directory(static_folder, 'index.html')
-        else:
-            print("DEBUG: index.html不存在，返回调试信息")
-            return {
-                "message": "食堂菜单系统后端服务运行中", 
-                "status": "ok",
-                "debug": {
-                    "static_folder": static_folder,
-                    "static_exists": os.path.exists(static_folder),
-                    "static_contents": os.listdir(static_folder) if os.path.exists(static_folder) else "目录不存在",
-                    "index_path": index_path
-                }
-            }, 200
+    # 注册API蓝图 - 在静态文件路由之后
+    from app.api import menu_bp, upload_bp
+    from app.api.health import health_bp
+    from app.api.scanner import scanner_bp
+    app.register_blueprint(menu_bp)
+    app.register_blueprint(upload_bp)
+    app.register_blueprint(health_bp)
+    app.register_blueprint(scanner_bp)
+    
+    # Initialize Flask-RESTX API - 在蓝图注册之后
+    api = Api(
+        app,
+        version='1.0',
+        title='Canteen Menu System API',
+        description='API for managing and displaying canteen menus',
+        doc='/api/docs/'
+    )
     
     # SPA路由处理 - 最低优先级，捕获所有其他路径
     @app.route('/<path:path>')
