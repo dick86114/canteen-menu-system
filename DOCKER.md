@@ -2,7 +2,7 @@
 
 ## 快速开始
 
-### 1. 使用预构建镜像
+### 1. 使用GitHub Container Registry镜像（推荐）
 
 ```bash
 # 创建菜单文件目录
@@ -14,13 +14,31 @@ docker run -d \
   -p 5000:5000 \
   -v $(pwd)/menu:/app/menu \
   --restart unless-stopped \
-  your-dockerhub-username/canteen-menu-system:latest
+  ghcr.io/dick86114/canteen-menu-system:latest
 
 # 访问系统
 open http://localhost:5000
 ```
 
-### 2. 使用 Docker Compose
+### 2. 使用Docker Hub镜像
+
+```bash
+# 创建菜单文件目录
+mkdir -p ./menu
+
+# 运行容器
+docker run -d \
+  --name canteen-menu \
+  -p 5000:5000 \
+  -v $(pwd)/menu:/app/menu \
+  --restart unless-stopped \
+  ghcr.io/dick86114/canteen-menu-system:latest
+
+# 访问系统
+open http://localhost:5000
+```
+
+### 3. 使用 Docker Compose
 
 创建 `docker-compose.yml` 文件：
 
@@ -29,7 +47,7 @@ version: '3.8'
 
 services:
   canteen-menu:
-    image: your-dockerhub-username/canteen-menu-system:latest
+    image: ghcr.io/dick86114/canteen-menu-system:latest
     ports:
       - "5000:5000"
     volumes:
@@ -139,7 +157,7 @@ docker stop canteen-menu
 docker rm canteen-menu
 
 # 拉取最新镜像
-docker pull your-dockerhub-username/canteen-menu-system:latest
+docker pull ghcr.io/dick86114/canteen-menu-system:latest
 
 # 重新运行
 docker run -d \
@@ -147,7 +165,7 @@ docker run -d \
   -p 5000:5000 \
   -v $(pwd)/menu:/app/menu \
   --restart unless-stopped \
-  your-dockerhub-username/canteen-menu-system:latest
+  ghcr.io/dick86114/canteen-menu-system:latest
 ```
 
 ## 自定义构建
@@ -156,7 +174,7 @@ docker run -d \
 
 ```bash
 # 克隆项目
-git clone <repository-url>
+git clone https://github.com/dick86114/canteen-menu-system.git
 cd canteen-menu-system
 
 # 构建镜像

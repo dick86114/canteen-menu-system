@@ -5,7 +5,7 @@
 set -e
 
 # 配置变量
-DOCKER_USERNAME="your-dockerhub-username"
+DOCKER_USERNAME="dick86114"
 IMAGE_NAME="canteen-menu-system"
 VERSION="latest"
 

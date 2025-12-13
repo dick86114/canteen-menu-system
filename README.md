@@ -1,4 +1,8 @@
-# 食堂菜单系统
+# 🍽️ 食堂菜单系统
+
+[![Docker Build](https://github.com/dick86114/canteen-menu-system/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/dick86114/canteen-menu-system/actions/workflows/docker-publish.yml)
+[![GitHub release](https://img.shields.io/github/release/dick86114/canteen-menu-system.svg)](https://github.com/dick86114/canteen-menu-system/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 一个现代化的食堂菜单管理和展示系统，支持自动扫描Excel文件和响应式菜单展示。
 
@@ -41,7 +45,7 @@
 
 ### 🐳 Docker 部署（推荐）
 
-**使用 Docker Hub 镜像**
+**使用 GitHub Container Registry 镜像（推荐）**
 ```bash
 # 1. 创建菜单文件目录
 mkdir -p ./menu
@@ -52,18 +56,18 @@ docker run -d \
   -p 5000:5000 \
   -v $(pwd)/menu:/app/menu \
   --restart unless-stopped \
-  your-dockerhub-username/canteen-menu-system:latest
+  ghcr.io/dick86114/canteen-menu-system:latest
 
 # 3. 访问系统
 # 打开浏览器访问 http://localhost:5000
 ```
 
-> 🔗 **Docker Hub**: [your-dockerhub-username/canteen-menu-system](https://hub.docker.com/r/your-dockerhub-username/canteen-menu-system)
+> 🔗 **GitHub Packages**: [ghcr.io/dick86114/canteen-menu-system](https://github.com/dick86114/canteen-menu-system/pkgs/container/canteen-menu-system)
 
 **使用 Docker Compose**
 ```bash
 # 1. 下载配置文件
-wget https://raw.githubusercontent.com/your-repo/canteen-menu-system/main/docker-compose.yml
+wget https://raw.githubusercontent.com/dick86114/canteen-menu-system/main/docker-compose.yml
 
 # 2. 启动服务
 docker-compose up -d
@@ -75,7 +79,7 @@ docker-compose logs -f canteen-menu
 **自己构建镜像**
 ```bash
 # 1. 克隆项目
-git clone <repository-url>
+git clone https://github.com/dick86114/canteen-menu-system.git
 cd canteen-menu-system
 
 # 2. 构建镜像
@@ -113,7 +117,7 @@ docker restart canteen-menu
 
 1. **克隆项目**
 ```bash
-git clone <repository-url>
+git clone https://github.com/dick86114/canteen-menu-system.git
 cd canteen-menu-system
 ```
 

@@ -4,7 +4,7 @@ REM 食堂菜单系统 Docker 镜像构建和发布脚本 (Windows)
 setlocal enabledelayedexpansion
 
 REM 配置变量
-set DOCKER_USERNAME=your-dockerhub-username
+set DOCKER_USERNAME=dick86114
 set IMAGE_NAME=canteen-menu-system
 set VERSION=latest
 

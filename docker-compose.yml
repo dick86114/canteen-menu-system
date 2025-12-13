@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   canteen-menu:
-    build: .
+    image: ghcr.io/dick86114/canteen-menu-system:latest
     ports:
       - "5000:5000"
     volumes:
@@ -17,6 +17,18 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  # 开发环境：使用本地构建
+  canteen-menu-dev:
+    build: .
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./menu:/app/menu
+    environment:
+      - FLASK_ENV=development
+    profiles:
+      - dev
 
 volumes:
   menu_data:

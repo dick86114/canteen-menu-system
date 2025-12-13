@@ -1,6 +1,6 @@
 # 🚀 部署指南
 
-## Docker Hub 发布步骤
+## GitHub Container Registry (GHCR) 发布步骤
 
 ### 1. 准备工作
 
@@ -13,7 +13,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone <your-repository-url>
+git clone https://github.com/dick86114/canteen-menu-system.git
 cd canteen-menu-system
 
 # 2. 构建前端
@@ -23,10 +23,10 @@ npm run build
 cd ..
 
 # 3. 构建Docker镜像
-docker build -t your-dockerhub-username/canteen-menu-system:latest .
+docker build -t ghcr.io/dick86114/canteen-menu-system:latest .
 
 # 4. 测试镜像
-docker run -d --name test-canteen -p 5000:5000 your-dockerhub-username/canteen-menu-system:latest
+docker run -d --name test-canteen -p 5000:5000 ghcr.io/dick86114/canteen-menu-system:latest
 
 # 5. 测试访问
 curl http://localhost:5000/api/health
@@ -36,18 +36,18 @@ docker stop test-canteen
 docker rm test-canteen
 ```
 
-### 3. 发布到Docker Hub
+### 3. 发布到GHCR
 
 ```bash
-# 1. 登录Docker Hub
-docker login
+# 1. 登录GHCR
+echo $GITHUB_TOKEN | docker login ghcr.io -u dick86114 --password-stdin
 
 # 2. 推送镜像
-docker push your-dockerhub-username/canteen-menu-system:latest
+docker push ghcr.io/dick86114/canteen-menu-system:latest
 
 # 3. 添加版本标签
-docker tag your-dockerhub-username/canteen-menu-system:latest your-dockerhub-username/canteen-menu-system:v1.0.0
-docker push your-dockerhub-username/canteen-menu-system:v1.0.0
+docker tag ghcr.io/dick86114/canteen-menu-system:latest ghcr.io/dick86114/canteen-menu-system:v1.0.0
+docker push ghcr.io/dick86114/canteen-menu-system:v1.0.0
 ```
 
 ### 4. 使用自动化脚本
@@ -63,7 +63,7 @@ chmod +x build-and-push.sh
 build-and-push.bat
 ```
 
-## Docker Hub 页面配置
+## GitHub Packages 页面配置
 
 ### 镜像描述
 
@@ -92,7 +92,7 @@ docker run -d \
   -p 5000:5000 \
   -v $(pwd)/menu:/app/menu \
   --restart unless-stopped \
-  your-dockerhub-username/canteen-menu-system
+  ghcr.io/dick86114/canteen-menu-system
 
 # 访问系统
 open http://localhost:5000
@@ -104,8 +104,8 @@ open http://localhost:5000
 
 ## 文档
 
-- [完整文档](https://github.com/your-repo/canteen-menu-system)
-- [Docker部署指南](https://github.com/your-repo/canteen-menu-system/blob/main/DOCKER.md)
+- [完整文档](https://github.com/dick86114/canteen-menu-system)
+- [Docker部署指南](https://github.com/dick86114/canteen-menu-system/blob/main/DOCKER.md)
 ```
 
 ### 标签建议
@@ -131,7 +131,7 @@ docker run -d \
   --name canteen-menu \
   -p 5000:5000 \
   -v $(pwd)/menu:/app/menu \
-  your-dockerhub-username/canteen-menu-system
+  ghcr.io/dick86114/canteen-menu-system
 ```
 
 2. **添加菜单文件**
@@ -152,7 +152,7 @@ cp your-menu.xlsx ./menu/
 version: '3.8'
 services:
   canteen-menu:
-    image: your-dockerhub-username/canteen-menu-system:latest
+    image: ghcr.io/dick86114/canteen-menu-system:latest
     ports:
       - "5000:5000"
     volumes:
@@ -191,7 +191,7 @@ docker stop canteen-menu
 docker rm canteen-menu
 
 # 拉取最新镜像
-docker pull your-dockerhub-username/canteen-menu-system:latest
+docker pull ghcr.io/dick86114/canteen-menu-system:latest
 
 # 重新运行
 docker run -d \
@@ -199,7 +199,7 @@ docker run -d \
   -p 5000:5000 \
   -v $(pwd)/menu:/app/menu \
   --restart unless-stopped \
-  your-dockerhub-username/canteen-menu-system:latest
+  ghcr.io/dick86114/canteen-menu-system:latest
 ```
 
 ### 备份数据
@@ -257,7 +257,7 @@ docker logs canteen-menu
 
 1. **使用具体版本标签**
 ```bash
-docker run ... your-dockerhub-username/canteen-menu-system:v1.0.0
+docker run ... ghcr.io/dick86114/canteen-menu-system:v1.0.0
 ```
 
 2. **设置资源限制**
