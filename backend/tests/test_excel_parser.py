@@ -22,7 +22,7 @@ class TestExcelParser:
     
     def test_parser_initialization(self):
         """Test ExcelParser initialization."""
-        assert self.parser.supported_extensions == {'.xlsx', '.xls', '.csv'}
+        assert self.parser.supported_extensions == {'.xlsx', '.xls', '.csv', '.et'}
         assert len(self.parser.DATE_FORMATS) > 0
         assert 'breakfast' in self.parser.MEAL_TYPE_MAPPINGS
         assert 'lunch' in self.parser.MEAL_TYPE_MAPPINGS
@@ -32,6 +32,7 @@ class TestExcelParser:
         """Test file format validation with valid extensions."""
         assert self.parser.validate_file_format("test.xlsx") is True
         assert self.parser.validate_file_format("test.xls") is True
+        assert self.parser.validate_file_format("test.et") is True
         assert self.parser.validate_file_format("/path/to/menu.xlsx") is True
     
     def test_validate_file_format_invalid(self):
@@ -277,3 +278,28 @@ class TestExcelParser:
                 for item in meal.items:
                     assert item.name is not None
                     assert len(item.name.strip()) > 0
+    
+    def test_parse_et_file_error_handling(self):
+        """Test .et file parsing error handling."""
+        # Create a temporary file with .et extension but invalid content
+        with tempfile.NamedTemporaryFile(suffix='.et', delete=False) as temp_file:
+            temp_file.write(b"Invalid content that is not a valid WPS file")
+            temp_path = temp_file.name
+        
+        try:
+            # This should raise an ExcelParsingError
+            with pytest.raises(ExcelParsingError) as exc_info:
+                self.parser.parse_excel_file(temp_path)
+            
+            # Check that the error message mentions WPS format
+            assert "WPS" in str(exc_info.value) or "et" in str(exc_info.value).lower()
+            
+        finally:
+            # Clean up
+            os.unlink(temp_path)
+    
+    def test_et_file_format_validation(self):
+        """Test that .et files are recognized as valid format."""
+        assert self.parser.validate_file_format("menu.et") is True
+        assert self.parser.validate_file_format("/path/to/wps_file.et") is True
+        assert self.parser.validate_file_format("WPS_TABLE.ET") is True  # Case insensitive

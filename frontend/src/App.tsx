@@ -168,7 +168,7 @@ const AppContent: React.FC = () => {
               className="btn btn-outline-light btn-sm"
               onClick={handleRefreshMenus}
               disabled={loading}
-              title="重新扫描menu目录下的Excel文件"
+              title="重新扫描menu目录下的菜单文件（支持Excel、WPS表格、CSV格式）"
             >
               <i className={`bi ${loading ? 'bi-arrow-clockwise' : 'bi-arrow-clockwise'} me-1 ${loading ? 'spin' : ''}`}></i>
               刷新菜单
@@ -228,8 +228,8 @@ const AppContent: React.FC = () => {
             </div>
             <div className="col-md-6 text-md-end">
               <small className="text-muted">
-                <i className="bi bi-info-circle me-1"></i>
-                响应式菜单展示系统
+                <i className="bi bi-file-earmark-spreadsheet me-1"></i>
+                支持Excel、WPS表格(.et)、CSV格式
               </small>
             </div>
           </div>

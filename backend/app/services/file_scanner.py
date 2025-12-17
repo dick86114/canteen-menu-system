@@ -139,7 +139,8 @@ class FileScanner:
         excel_patterns = [
             os.path.join(self.menu_directory, '*.xlsx'),
             os.path.join(self.menu_directory, '*.xls'),
-            os.path.join(self.menu_directory, '*.csv')  # 临时支持CSV文件用于本地测试
+            os.path.join(self.menu_directory, '*.et'),   # WPS表格文件
+            os.path.join(self.menu_directory, '*.csv')   # 临时支持CSV文件用于本地测试
         ]
         
         excel_files = []

@@ -53,7 +53,7 @@ class ExcelParser:
     
     def __init__(self):
         """Initialize the Excel parser."""
-        self.supported_extensions = {'.xlsx', '.xls', '.csv'}
+        self.supported_extensions = {'.xlsx', '.xls', '.csv', '.et'}
     
     def validate_file_format(self, file_path: Union[str, Path]) -> bool:
         """
@@ -98,6 +98,9 @@ class ExcelParser:
             if file_extension == '.csv':
                 # 读取CSV文件
                 df = pd.read_csv(file_path, encoding='utf-8')
+            elif file_extension == '.et':
+                # 处理WPS表格文件(.et格式)
+                df = self._parse_et_file(file_path)
             else:
                 # 处理Excel文件
                 # Try to load the workbook first to check if it's a valid Excel file
@@ -644,3 +647,94 @@ class ExcelParser:
         
         category = str(cat_value).strip()
         return category if category and category != 'nan' else None
+    
+    def _parse_et_file(self, file_path: Union[str, Path]) -> pd.DataFrame:
+        """
+        解析WPS表格文件(.et格式)
+        
+        Args:
+            file_path: WPS表格文件路径
+            
+        Returns:
+            解析后的DataFrame
+            
+        Raises:
+            ExcelParsingError: 如果文件无法解析
+        """
+        try:
+            # 方法1: 尝试使用pandas直接读取（某些情况下pandas可以处理.et文件）
+            try:
+                logger.info(f"尝试使用pandas直接读取.et文件: {file_path}")
+                df = pd.read_excel(file_path, engine='openpyxl')
+                if not df.empty:
+                    logger.info("成功使用pandas读取.et文件")
+                    return df
+            except Exception as e:
+                logger.warning(f"pandas直接读取.et文件失败: {e}")
+            
+            # 方法2: 尝试使用xlrd引擎
+            try:
+                logger.info(f"尝试使用xlrd引擎读取.et文件: {file_path}")
+                df = pd.read_excel(file_path, engine='xlrd')
+                if not df.empty:
+                    logger.info("成功使用xlrd引擎读取.et文件")
+                    return df
+            except Exception as e:
+                logger.warning(f"xlrd引擎读取.et文件失败: {e}")
+            
+            # 方法3: 尝试将.et文件当作Excel文件处理
+            try:
+                logger.info(f"尝试将.et文件当作Excel文件处理: {file_path}")
+                # 创建临时文件名，将.et改为.xlsx
+                import tempfile
+                import shutil
+                
+                with tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False) as temp_file:
+                    temp_path = temp_file.name
+                
+                # 复制文件并重命名
+                shutil.copy2(file_path, temp_path)
+                
+                try:
+                    df = pd.read_excel(temp_path, engine='openpyxl')
+                    if not df.empty:
+                        logger.info("成功将.et文件当作Excel文件处理")
+                        return df
+                finally:
+                    # 清理临时文件
+                    try:
+                        os.unlink(temp_path)
+                    except:
+                        pass
+                        
+            except Exception as e:
+                logger.warning(f"将.et文件当作Excel文件处理失败: {e}")
+            
+            # 方法4: 尝试使用CSV方式读取（某些.et文件可能是文本格式）
+            try:
+                logger.info(f"尝试使用CSV方式读取.et文件: {file_path}")
+                # 尝试不同的编码
+                for encoding in ['utf-8', 'gbk', 'gb2312', 'utf-16']:
+                    try:
+                        df = pd.read_csv(file_path, encoding=encoding, sep=None, engine='python')
+                        if not df.empty:
+                            logger.info(f"成功使用CSV方式读取.et文件，编码: {encoding}")
+                            return df
+                    except Exception:
+                        continue
+                        
+            except Exception as e:
+                logger.warning(f"CSV方式读取.et文件失败: {e}")
+            
+            # 如果所有方法都失败，抛出异常
+            raise ExcelParsingError(
+                f"无法解析WPS表格文件 {file_path}。"
+                f"请尝试将文件另存为Excel格式(.xlsx)或CSV格式后重新上传。"
+                f"支持的格式: {self.supported_extensions}"
+            )
+            
+        except ExcelParsingError:
+            raise
+        except Exception as e:
+            logger.error(f"解析.et文件时发生未知错误: {e}")
+            raise ExcelParsingError(f"解析WPS表格文件失败: {str(e)}")

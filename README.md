@@ -175,7 +175,10 @@ npm run dev           # 启动开发服务器 (http://localhost:3001)
 
 ## Excel文件格式要求
 
-支持的Excel文件格式：
+支持的文件格式：
+- Excel文件 (.xlsx, .xls)
+- WPS表格文件 (.et)
+- CSV文件 (.csv)
 - 包含日期、餐次、时间、菜品名称等列
 - 支持中文列名
 - 自动识别列结构
