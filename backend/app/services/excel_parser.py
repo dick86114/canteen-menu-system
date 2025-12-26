@@ -175,20 +175,24 @@ class ExcelParser:
         weekday_cols = {}
         
         for row_idx in range(min(10, len(df))):
+            found_weekday_in_row = False
             for col_idx in range(1, len(df.columns)):  # 跳过第一列
                 try:
                     cell_value = str(df.iloc[row_idx, col_idx]).strip()
                     if '星期' in cell_value:
-                        weekday_row_idx = row_idx
+                        if weekday_row_idx is None:
+                            weekday_row_idx = row_idx
+                        found_weekday_in_row = True
                         # 映射列索引到星期
                         weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
                         for weekday in weekdays:
                             if weekday in cell_value:
                                 weekday_cols[col_idx] = weekday
-                        break
+                                break  # 找到匹配的星期后跳出weekdays循环
                 except:
                     continue
-            if weekday_row_idx is not None:
+            # 如果这一行找到了星期信息，继续检查这一行的其他列，但不检查其他行
+            if found_weekday_in_row:
                 break
         
         if not weekday_cols:
