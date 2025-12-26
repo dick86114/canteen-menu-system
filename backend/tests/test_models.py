@@ -46,7 +46,9 @@ class TestMenuItem:
             'name': 'Fish Curry',
             'description': 'Spicy fish curry',
             'category': 'main',
-            'price': 15.0
+            'price': 15.0,
+            'order': 0,
+            'category_order': 0
         }
         assert item_dict == expected
         
@@ -56,6 +58,8 @@ class TestMenuItem:
         assert restored_item.description == item.description
         assert restored_item.category == item.category
         assert restored_item.price == item.price
+        assert restored_item.order == item.order
+        assert restored_item.category_order == item.category_order
 
 
 class TestMeal:

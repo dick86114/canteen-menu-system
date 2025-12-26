@@ -115,17 +115,32 @@ interface MenuItem {
   description?: string;
   category?: string;
   price?: number;
+  order: number;          // 菜品在Excel中的顺序
+  category_order: number; // 分类在Excel中的顺序
 }
 ```
 
 ### Excel数据结构
-期望的Excel格式：
+支持多种Excel格式：
+
+**标准列格式**:
 - A列: 日期 (YYYY-MM-DD或可识别的日期格式)
 - B列: 餐次类型 (breakfast/lunch/dinner)
 - C列: 时间 (HH:MM)
 - D列: 菜品名称
 - E列: 描述
 - F列: 类别 (可选)
+
+**星期格式**:
+- 第一列: 分类名称或菜品名称
+- 后续列: 星期一、星期二、星期三等，包含对应日期的菜品
+- 支持从文件名解析日期范围（如：12月29-31）
+- 支持智能餐次推断（基于"类别"行出现次数）
+
+**WPS表格格式(.et)**:
+- 支持与Excel相同的数据结构
+- 使用多种解析策略：pandas直接读取、xlrd引擎、格式转换、CSV方式
+- 自动回退到兼容性最好的解析方法
 
 ### 存储模型
 ```python
@@ -138,6 +153,29 @@ class MenuStorage:
     def get_menu_by_date(self, date: str) -> Optional[List[Meal]]
     def get_available_dates(self) -> List[str]
     def clear_data(self) -> None
+
+class MenuItem:
+    """菜单项数据模型，包含排序信息"""
+    def __init__(self, name: str, description: str = None, 
+                 category: str = None, price: float = None,
+                 order: int = 0, category_order: int = 0):
+        self.name = name
+        self.description = description
+        self.category = category
+        self.price = price
+        self.order = order              # 菜品在Excel中的顺序
+        self.category_order = category_order  # 分类在Excel中的顺序
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为字典，用于序列化时按顺序排序"""
+        return {
+            'name': self.name,
+            'description': self.description,
+            'category': self.category,
+            'price': self.price,
+            'order': self.order,
+            'category_order': self.category_order
+        }
 ```
 
 ## 正确性属性
@@ -193,6 +231,26 @@ class MenuStorage:
 **属性 12: UI样式一致性**
 *对于任何*渲染的菜单卡片，样式类和排版应在所有卡片中一致应用
 **验证: 需求 6.2**
+
+**属性 13: WPS文件格式支持**
+*对于任何*有效的.et格式文件，系统应能够使用多种解析策略成功提取菜单数据
+**验证: 需求 7.1, 7.2, 7.3**
+
+**属性 14: 菜单顺序保持**
+*对于任何*解析的Excel文件，显示的分类和菜品顺序应与原始Excel表格中的顺序完全一致
+**验证: 需求 8.1, 8.2, 8.3, 8.4**
+
+**属性 15: 星期格式识别**
+*对于任何*包含星期信息的Excel文件，系统应正确识别星期格式并映射到具体日期
+**验证: 需求 9.1, 9.2**
+
+**属性 16: 餐次智能推断**
+*对于任何*缺少明确餐次标识的菜单文件，系统应基于"类别"行正确推断早餐、午餐、晚餐分组
+**验证: 需求 9.3, 9.4**
+
+**属性 17: 时区处理一致性**
+*对于任何*日期和时间操作，系统应使用统一的时区处理避免时区偏移问题
+**验证: 需求 10.1, 10.2, 10.3, 10.4**
 
 ## 错误处理
 
@@ -281,3 +339,30 @@ class MenuStorage:
 - **属性测试**: Hypothesis (后端), fast-check (前端)
 - **代码质量**: ESLint, Prettier (前端), Black, flake8 (后端)
 - **类型检查**: TypeScript (前端), mypy (后端)
+
+## 已实现的增强功能
+
+### WPS表格文件支持
+系统现已支持WPS Office创建的.et格式表格文件：
+- **多策略解析**: 使用pandas直接读取、xlrd引擎、格式转换、CSV方式等多种策略
+- **自动回退**: 当一种方法失败时自动尝试其他解析方法
+- **兼容性**: 与Excel文件保持相同的数据完整性和解析逻辑
+
+### 时区处理系统
+实现了统一的时区处理机制：
+- **Docker环境变量**: 支持TZ环境变量配置时区（默认Asia/Shanghai）
+- **统一时区工具**: 创建了`backend/app/utils/timezone.py`模块
+- **前端时区修复**: 修复了月历日期标记错位问题
+
+### 智能Excel解析
+增强了Excel文件解析能力：
+- **星期格式支持**: 自动识别基于星期的菜单格式
+- **智能餐次推断**: 基于"类别"行数量自动推断早餐、午餐、晚餐
+- **分类延续机制**: 正确处理跨多行的分类数据
+- **顺序保持**: 完全按照Excel表格中的原始顺序显示分类和菜品
+
+### 改进的分类识别
+实现了更智能的分类识别算法：
+- **已知分类白名单**: 预定义常见分类名称
+- **智能特征识别**: 基于长度、关键词等特征判断分类
+- **NaN值处理**: 正确处理pandas的空值，保持分类连续性
