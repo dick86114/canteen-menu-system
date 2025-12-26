@@ -161,6 +161,17 @@ export const getScanStatus = async (): Promise<{
   });
 };
 
+// 获取有档口特色的日期列表 - 新增
+export const getSpecialtyDates = async (): Promise<{
+  specialtyDates: string[];
+  count: number;
+}> => {
+  return requestWithRetry(async () => {
+    const response = await api.get('/specialty-dates');
+    return response.data;
+  });
+};
+
 // 网络连接检查
 export const checkNetworkConnection = async (): Promise<boolean> => {
   try {

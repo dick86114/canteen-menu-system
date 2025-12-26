@@ -154,3 +154,36 @@ class DatesResource(Resource):
             response['mostRecentDate'] = dates[-1]
         
         return response
+
+
+@api.route('/specialty-dates')
+class SpecialtyDatesResource(Resource):
+    """Specialty dates endpoint."""
+    
+    @api.doc('get_specialty_dates')
+    def get(self) -> Dict[str, Any]:
+        """
+        Get list of dates that have specialty dishes (档口特色).
+        
+        Returns all dates for which specialty dishes are available.
+        """
+        storage = get_storage()
+        dates = storage.get_available_dates()
+        specialty_dates = []
+        
+        for date_str in dates:
+            menu_data = storage.get_menu_by_date(date_str)
+            if menu_data:
+                # 检查是否有档口特色菜品
+                has_specialty = any(
+                    item.category == '档口特色'
+                    for meal in menu_data.meals
+                    for item in meal.items
+                )
+                if has_specialty:
+                    specialty_dates.append(date_str)
+        
+        return {
+            'specialtyDates': specialty_dates,
+            'count': len(specialty_dates)
+        }

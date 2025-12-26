@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getSpecialtyDates } from '../services/api';
 
 interface DateSelectorProps {
   selectedDate: string;
@@ -10,6 +11,7 @@ interface DateSelectorProps {
 interface CalendarViewProps {
   selectedDate: string;
   availableDates: string[];
+  specialtyDates: string[];
   onDateSelect: (date: string) => void;
   onClose: () => void;
 }
@@ -18,6 +20,7 @@ interface CalendarViewProps {
 const CalendarView: React.FC<CalendarViewProps> = ({
   selectedDate,
   availableDates,
+  specialtyDates,
   onDateSelect,
   onClose
 }) => {
@@ -67,6 +70,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   // 检查日期是否有菜单
   const hasMenu = (date: Date): boolean => {
     return availableDates.includes(formatDateString(date));
+  };
+
+  // 检查日期是否有档口特色
+  const hasSpecialty = (date: Date): boolean => {
+    return specialtyDates.includes(formatDateString(date));
   };
 
   // 检查是否是今天
@@ -142,6 +150,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             {week.map((date, dayIndex) => {
               const dateStr = formatDateString(date);
               const hasMenuData = hasMenu(date);
+              const hasSpecialtyData = hasSpecialty(date);
               const isTodayDate = isToday(date);
               const isSelectedDate = isSelected(date);
               const isCurrentMonthDate = isCurrentMonth(date);
@@ -154,15 +163,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                   } ${
                     hasMenuData ? 'has-menu' : ''
                   } ${
+                    hasSpecialtyData ? 'has-specialty' : ''
+                  } ${
                     isTodayDate ? 'today' : ''
                   } ${
                     !isCurrentMonthDate ? 'other-month' : ''
                   }`}
                   onClick={() => handleDateClick(date)}
-                  title={`${dateStr}${hasMenuData ? ' (有菜单)' : ''}${isTodayDate ? ' (今天)' : ''}`}
+                  title={`${dateStr}${hasMenuData ? ' (有菜单)' : ''}${hasSpecialtyData ? ' (有档口特色)' : ''}${isTodayDate ? ' (今天)' : ''}`}
                 >
                   <span className="calendar-day-number">{date.getDate()}</span>
                   {hasMenuData && <span className="calendar-day-indicator">●</span>}
+                  {hasSpecialtyData && <span className="calendar-day-specialty">⭐</span>}
                 </button>
               );
             })}
@@ -176,6 +188,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           <span className="legend-item">
             <span className="legend-dot has-menu">●</span>
             有菜单
+          </span>
+          <span className="legend-item">
+            <span className="legend-dot specialty">⭐</span>
+            档口特色
           </span>
           <span className="legend-item">
             <span className="legend-dot today">●</span>
@@ -197,6 +213,24 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   loading = false
 }) => {
   const [showDateList, setShowDateList] = useState<boolean>(false);
+  const [specialtyDates, setSpecialtyDates] = useState<string[]>([]);
+
+  // 获取档口特色日期
+  useEffect(() => {
+    const fetchSpecialtyDates = async () => {
+      if (availableDates.length === 0) return;
+      
+      try {
+        const response = await getSpecialtyDates();
+        setSpecialtyDates(response.specialtyDates);
+      } catch (error) {
+        console.error('获取档口特色日期失败:', error);
+        setSpecialtyDates([]);
+      }
+    };
+
+    fetchSpecialtyDates();
+  }, [availableDates]);
 
   // 将字符串日期转换为 Date 对象 - 使用本地时区
   const parseDate = (dateStr: string): Date => {
@@ -427,6 +461,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
           <CalendarView 
             selectedDate={selectedDate}
             availableDates={availableDates}
+            specialtyDates={specialtyDates}
             onDateSelect={handleDateSelect}
             onClose={() => setShowDateList(false)}
           />
