@@ -170,105 +170,138 @@ class ExcelParser:
         """
         menu_data_dict = {}
         
-        # Find weekday columns (look for patterns like 星期一, 星期二, etc.)
-        weekday_columns = []
-        for i, col in enumerate(df.columns):
-            if i == 0:  # Skip first column (category column)
-                continue
-            weekday_columns.append(col)
+        # 查找包含星期信息的行
+        weekday_row_idx = None
+        weekday_cols = {}
         
-        if len(weekday_columns) < 5:  # Need at least 5 weekdays
-            raise ExcelParsingError("Could not find enough weekday columns in weekly format")
+        for row_idx in range(min(10, len(df))):
+            for col_idx in range(1, len(df.columns)):  # 跳过第一列
+                try:
+                    cell_value = str(df.iloc[row_idx, col_idx]).strip()
+                    if '星期' in cell_value:
+                        weekday_row_idx = row_idx
+                        # 映射列索引到星期
+                        weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
+                        for weekday in weekdays:
+                            if weekday in cell_value:
+                                weekday_cols[col_idx] = weekday
+                        break
+                except:
+                    continue
+            if weekday_row_idx is not None:
+                break
         
-        # Generate dates for the week based on current year
-        from datetime import datetime, timedelta
+        if not weekday_cols:
+            raise ExcelParsingError("Could not find weekday information in weekly format")
+        
+        logger.info(f"找到星期行: {weekday_row_idx}, 星期列映射: {weekday_cols}")
+        
+        # 从文件名提取日期信息
         from ..utils.timezone import current_year
-        # Use current year and determine the Monday of the week
         current_year_val = current_year()
         
-        # Try to extract date range from filename if available
-        # Look for patterns like "12月8-12" or "12月15-19"
-        import re
+        # 尝试从文件名中提取月份和日期范围
         filename = getattr(self, '_current_filename', '')
-        date_match = re.search(r'(\d+)月(\d+)-(\d+)', filename)
+        logger.info(f"处理文件: {filename}")
         
+        # 解析文件名中的日期信息（如：12月29-31）
+        import re
+        date_match = re.search(r'(\d+)月(\d+)-(\d+)', filename)
         if date_match:
             month = int(date_match.group(1))
             start_day = int(date_match.group(2))
-            monday = datetime(current_year_val, month, start_day)
-        else:
-            # Default to December 8, 2025 if no pattern found
-            monday = datetime(2025, 12, 8)
-        
-        # Map weekday columns to dates
-        weekday_to_date = {}
-        for i, col in enumerate(weekday_columns[:5]):  # Only use first 5 columns
-            date_obj = monday + timedelta(days=i)
-            weekday_to_date[col] = date_obj.strftime('%Y-%m-%d')
-        
-        # Find meal sections and process data
-        current_meal_type = None
-        current_category = None
-        
-        for idx, row in df.iterrows():
-            first_col_value = str(row.iloc[0]).strip()
+            end_day = int(date_match.group(3))
             
-            # Skip empty rows
-            if pd.isna(first_col_value) or first_col_value.lower() in ['nan', 'none', '']:
-                continue
+            # 生成日期列表
+            dates = []
+            for day in range(start_day, end_day + 1):
+                try:
+                    from datetime import datetime
+                    date_obj = datetime(current_year_val, month, day)
+                    dates.append(date_obj.strftime('%Y-%m-%d'))
+                except ValueError:
+                    continue
             
-            # Identify meal sections
-            if first_col_value in ['早餐', '午餐', '晚餐']:
-                current_meal_type = self._normalize_meal_type(first_col_value)
-                continue
-            elif first_col_value == '类别':
-                continue  # Skip header row
+            logger.info(f"解析出的日期: {dates}")
             
-            # This is a food category or food item row
-            current_category = first_col_value
-                
-            # Process food items for each weekday
-            for col in weekday_columns[:5]:
-                if col not in weekday_to_date:
+            if not dates:
+                logger.warning("未能解析出有效日期")
+                raise ExcelParsingError("Could not parse dates from filename")
+            
+            # 映射星期到日期
+            weekday_to_date = {}
+            weekday_names = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
+            for col_idx, weekday in weekday_cols.items():
+                weekday_index = weekday_names.index(weekday)
+                if weekday_index < len(dates):
+                    weekday_to_date[col_idx] = dates[weekday_index]
+            
+            logger.info(f"星期到日期映射: {weekday_to_date}")
+            
+            # 处理菜单数据
+            current_meal_type = "早餐"  # 默认餐次
+            
+            for row_idx in range(len(df)):
+                if row_idx == weekday_row_idx:
                     continue
                     
-                date_key = weekday_to_date[col]
-                food_items = str(row[col])
-                
-                if pd.isna(food_items) or food_items.lower() in ['nan', 'none', '']:
+                try:
+                    first_col_value = str(df.iloc[row_idx, 0]).strip()
+                    
+                    # 检查是否是餐次标识
+                    if first_col_value in ['早餐', '午餐', '晚餐']:
+                        current_meal_type = first_col_value
+                        continue
+                    
+                    # 检查是否是类别行或空行（跳过）
+                    if first_col_value in ['类别', 'NaN', 'nan', ''] or pd.isna(first_col_value):
+                        continue
+                    
+                    # 处理菜品数据
+                    for col_idx, date_str in weekday_to_date.items():
+                        try:
+                            food_value = str(df.iloc[row_idx, col_idx]).strip()
+                            
+                            if food_value and food_value not in ['NaN', 'nan', '<NA>', '']:
+                                # 创建或获取MenuData
+                                if date_str not in menu_data_dict:
+                                    menu_data_dict[date_str] = MenuData(date=date_str)
+                                
+                                menu_data = menu_data_dict[date_str]
+                                
+                                # 确定餐次和时间
+                                meal_type = self._normalize_meal_type(current_meal_type) or 'lunch'
+                                time_str = self._get_meal_time(meal_type)
+                                
+                                # 查找或创建餐次
+                                meal = menu_data.get_meal_by_type(meal_type)
+                                if not meal:
+                                    meal = Meal(type=meal_type, time=time_str)
+                                    menu_data.add_meal(meal)
+                                
+                                # 分割多个菜品（用逗号、顿号等分隔）
+                                foods = re.split(r'[，,、/]', food_value)
+                                for food in foods:
+                                    food = food.strip()
+                                    if food:
+                                        menu_item = MenuItem(
+                                            name=food,
+                                            category=first_col_value if first_col_value not in ['NaN', 'nan', ''] else None
+                                        )
+                                        meal.add_item(menu_item)
+                        except Exception as e:
+                            logger.warning(f"处理第{row_idx}行第{col_idx}列时出错: {e}")
+                            continue
+                            
+                except Exception as e:
+                    logger.warning(f"处理第{row_idx}行时出错: {e}")
                     continue
-                
-                # Create or get MenuData for this date
-                if date_key not in menu_data_dict:
-                    menu_data_dict[date_key] = MenuData(date=date_key)
-                
-                menu_data = menu_data_dict[date_key]
-                
-                # Determine meal type and time
-                meal_type = current_meal_type or 'lunch'
-                time_str = self._get_meal_time(meal_type)
-                
-                # Find or create meal
-                meal = menu_data.get_meal_by_type(meal_type)
-                if not meal:
-                    meal = Meal(type=meal_type, time=time_str)
-                    menu_data.add_meal(meal)
-                
-                # Split multiple food items (separated by commas, slashes, etc.)
-                food_list = self._split_food_items(food_items)
-                
-                for food_name in food_list:
-                    if food_name.strip():
-                        menu_item = MenuItem(
-                            name=food_name.strip(),
-                            category=current_category
-                        )
-                        meal.add_item(menu_item)
         
         result = list(menu_data_dict.values())
         if not result:
             raise ExcelParsingError("No valid menu data found in weekly format")
         
+        logger.info(f"成功解析weekly格式，生成{len(result)}天菜单")
         return sorted(result, key=lambda x: x.date)
     
     def _parse_standard_format(self, df: pd.DataFrame) -> List[MenuData]:
@@ -287,6 +320,11 @@ class ExcelParser:
         if not column_mapping:
             raise ExcelParsingError("Could not identify required columns in Excel file")
         
+        # 检查是否是weekly格式
+        if column_mapping.get('format') == 'weekly':
+            logger.info("使用weekly格式解析")
+            return self._parse_weekly_format(df)
+        
         # Extract data using the identified column mapping
         menu_data_dict = {}  # date -> MenuData
         
@@ -297,8 +335,12 @@ class ExcelParser:
                     continue
                 
                 # Extract date
-                date_str = self._extract_date(row, column_mapping)
-                if not date_str:
+                try:
+                    date_str = self._extract_date(row, column_mapping)
+                    if not date_str:
+                        continue
+                except Exception as e:
+                    logger.warning(f"Error extracting date from row {index}: {e}, column_mapping: {column_mapping}, row: {row.to_dict()}")
                     continue
                 
                 # Extract meal information
@@ -432,8 +474,19 @@ class ExcelParser:
         if 'date' not in column_mapping or 'food_name' not in column_mapping:
             column_mapping = self._infer_columns_from_data(df)
         
+        # 特殊处理：检查是否是基于星期的菜单格式
+        if 'date' not in column_mapping or 'food_name' not in column_mapping:
+            weekly_mapping = self._try_parse_weekly_format(df)
+            if weekly_mapping and weekly_mapping.get('format') == 'weekly':
+                # 直接使用weekly格式解析，不需要column mapping
+                return weekly_mapping
+        
         # Ensure we have at least date and food_name
         if 'date' not in column_mapping or 'food_name' not in column_mapping:
+            logger.error(f"无法识别必需的列。当前列映射: {column_mapping}")
+            logger.error(f"DataFrame列名: {list(df.columns)}")
+            logger.error(f"DataFrame前5行数据:")
+            logger.error(f"{df.head().to_string()}")
             return None
         
         return column_mapping
@@ -541,6 +594,17 @@ class ExcelParser:
             Normalized date string or None if parsing fails
         """
         date_str = str(date_str).strip()
+        
+        # 如果已经是YYYY-MM-DD格式，验证并返回
+        import re
+        if re.match(r'^\d{4}-\d{2}-\d{2}$', date_str):
+            try:
+                # 验证日期是否有效
+                datetime.strptime(date_str, '%Y-%m-%d')
+                return date_str
+            except ValueError:
+                # 如果日期无效，继续尝试其他格式
+                pass
         
         # Handle pandas Timestamp objects
         try:
@@ -738,3 +802,163 @@ class ExcelParser:
         except Exception as e:
             logger.error(f"解析.et文件时发生未知错误: {e}")
             raise ExcelParsingError(f"解析WPS表格文件失败: {str(e)}")
+    
+    def _try_parse_weekly_format(self, df: pd.DataFrame) -> Optional[Dict[str, str]]:
+        """
+        尝试解析基于星期的菜单格式
+        
+        Args:
+            df: DataFrame to analyze
+            
+        Returns:
+            Column mapping if weekly format detected, None otherwise
+        """
+        try:
+            logger.info("尝试解析基于星期的菜单格式")
+            
+            # 检查是否包含星期信息（在数据行中而不是列名中）
+            has_weekday = False
+            for row_idx in range(min(10, len(df))):  # 检查前10行
+                for col_idx in range(len(df.columns)):
+                    try:
+                        cell_value = str(df.iloc[row_idx, col_idx]).strip()
+                        if any(day in cell_value for day in ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']):
+                            has_weekday = True
+                            logger.info(f"在第{row_idx}行第{col_idx}列发现星期信息: {cell_value}")
+                            break
+                    except:
+                        continue
+                if has_weekday:
+                    break
+            
+            if not has_weekday:
+                logger.info("未检测到星期格式")
+                return None
+            
+            logger.info("检测到基于星期的菜单格式，将使用weekly格式解析")
+            
+            # 返回一个特殊的标记，表示这是weekly格式
+            return {'format': 'weekly'}
+            
+        except Exception as e:
+            logger.warning(f"解析基于星期的格式时出错: {e}")
+            return None
+    
+    def _convert_weekly_to_standard_format(self, df: pd.DataFrame) -> Optional[pd.DataFrame]:
+        """
+        将基于星期的菜单格式转换为标准格式
+        
+        Args:
+            df: 原始DataFrame
+            
+        Returns:
+            转换后的DataFrame，包含标准的日期、餐次、菜品列
+        """
+        try:
+            # 创建标准格式的数据列表
+            standard_data = []
+            
+            # 从文件名提取日期信息
+            from ..utils.timezone import current_year
+            current_year_val = current_year()
+            
+            # 尝试从文件名中提取月份和日期范围
+            filename = getattr(self, '_current_filename', '')
+            logger.info(f"处理文件: {filename}")
+            
+            # 解析文件名中的日期信息（如：12月29-31）
+            import re
+            date_match = re.search(r'(\d+)月(\d+)-(\d+)', filename)
+            if date_match:
+                month = int(date_match.group(1))
+                start_day = int(date_match.group(2))
+                end_day = int(date_match.group(3))
+                
+                # 生成日期列表
+                dates = []
+                for day in range(start_day, end_day + 1):
+                    try:
+                        from datetime import datetime
+                        date_obj = datetime(current_year_val, month, day)
+                        dates.append(date_obj.strftime('%Y-%m-%d'))
+                    except ValueError:
+                        continue
+                
+                logger.info(f"解析出的日期: {dates}")
+                
+                if not dates:
+                    logger.warning("未能解析出有效日期")
+                    return None
+                
+                # 查找星期行
+                weekday_row_idx = None
+                weekday_cols = {}
+                
+                for row_idx in range(len(df)):
+                    for col_idx, col in enumerate(df.columns):
+                        cell_value = str(df.iloc[row_idx, col_idx]).strip()
+                        if '星期' in cell_value:
+                            weekday_row_idx = row_idx
+                            # 映射星期到日期
+                            weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
+                            for i, weekday in enumerate(weekdays):
+                                if weekday in cell_value and i < len(dates):
+                                    weekday_cols[col] = dates[i]
+                            break
+                    if weekday_row_idx is not None:
+                        break
+                
+                logger.info(f"星期列映射: {weekday_cols}")
+                
+                if weekday_cols:
+                    # 处理菜单数据
+                    current_meal_type = "早餐"  # 默认餐次
+                    
+                    for row_idx in range(len(df)):
+                        if row_idx == weekday_row_idx:
+                            continue
+                            
+                        first_col_value = str(df.iloc[row_idx, 0]).strip()
+                        
+                        # 检查是否是餐次标识
+                        if first_col_value in ['早餐', '午餐', '晚餐', 'breakfast', 'lunch', 'dinner']:
+                            current_meal_type = first_col_value
+                            continue
+                        
+                        # 检查是否是类别行（跳过）
+                        if first_col_value in ['类别', '油炸食品', '小菜类', '营养鸡蛋', '粥品', '饮品类', '包点', '清炒时蔬', '传统风味']:
+                            continue
+                        
+                        # 处理菜品数据
+                        for col, date_str in weekday_cols.items():
+                            if col in df.columns:
+                                col_idx = df.columns.get_loc(col)
+                                food_value = str(df.iloc[row_idx, col_idx]).strip()
+                                
+                                if food_value and food_value != '<NA>' and food_value != 'nan':
+                                    # 分割多个菜品（用逗号、顿号等分隔）
+                                    foods = re.split(r'[，,、/]', food_value)
+                                    for food in foods:
+                                        food = food.strip()
+                                        if food:
+                                            standard_data.append({
+                                                'date': date_str,  # 使用英文列名
+                                                'meal_type': current_meal_type,
+                                                'time': '12:00',  # 默认时间
+                                                'food_name': food,
+                                                'description': '',
+                                                'category': first_col_value if first_col_value not in ['<NA>', 'nan', ''] else ''
+                                            })
+                
+                if standard_data:
+                    result_df = pd.DataFrame(standard_data)
+                    logger.info(f"转换成功，生成 {len(result_df)} 行数据")
+                    logger.info(f"转换后的前5行: \n{result_df.head().to_string()}")
+                    return result_df
+            
+            logger.warning("无法从文件名解析日期信息")
+            return None
+            
+        except Exception as e:
+            logger.error(f"转换基于星期的格式时出错: {e}")
+            return None
