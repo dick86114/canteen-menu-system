@@ -244,6 +244,12 @@ class ExcelParser:
             
             # 处理菜单数据
             current_meal_type = "早餐"  # 默认餐次
+            category_row_count = 0  # 记录遇到的"类别"行数量
+            explicit_meal_set = False  # 标记是否已经通过明确标识设置了餐次
+            current_category = None  # 当前分类名称，用于延续到后续行
+            category_order = 0  # 分类顺序计数器
+            item_order = 0  # 菜品顺序计数器
+            category_order_map = {}  # 分类名称到顺序的映射
             
             for row_idx in range(len(df)):
                 if row_idx == weekday_row_idx:
@@ -255,11 +261,58 @@ class ExcelParser:
                     # 检查是否是餐次标识
                     if first_col_value in ['早餐', '午餐', '晚餐']:
                         current_meal_type = first_col_value
+                        explicit_meal_set = True  # 标记为明确设置
+                        current_category = None  # 重置分类
+                        category_order = 0  # 重置分类顺序
+                        item_order = 0  # 重置菜品顺序
+                        category_order_map = {}  # 重置分类顺序映射
+                        logger.info(f"明确识别餐次标识: {current_meal_type}")
                         continue
                     
-                    # 检查是否是类别行或空行（跳过）
-                    if first_col_value in ['类别', 'NaN', 'nan', ''] or pd.isna(first_col_value):
+                    # 检查是否是类别行或空行
+                    if first_col_value == '类别':
+                        category_row_count += 1
+                        current_category = None  # 重置分类
+                        category_order = 0  # 重置分类顺序
+                        item_order = 0  # 重置菜品顺序
+                        category_order_map = {}  # 重置分类顺序映射
+                        if not explicit_meal_set:  # 只有在没有明确餐次标识时才推断
+                            if category_row_count == 1:
+                                # 第一个"类别"行，通常是早餐
+                                current_meal_type = "早餐"
+                            elif category_row_count == 2:
+                                # 第二个"类别"行，通常是午餐
+                                current_meal_type = "午餐"
+                            elif category_row_count == 3:
+                                # 第三个"类别"行，通常是晚餐
+                                current_meal_type = "晚餐"
+                            logger.info(f"推断第{category_row_count}个类别行为{current_meal_type}")
+                        else:
+                            logger.info(f"跳过第{category_row_count}个类别行推断，当前餐次: {current_meal_type}")
+                        # 重置明确设置标记，为下一个餐次做准备
+                        if category_row_count > 1:
+                            explicit_meal_set = False
                         continue
+                    elif first_col_value in ['NaN', 'nan'] or pd.isna(df.iloc[row_idx, 0]):
+                        # 第一列为空（NaN），继续使用当前分类，不做任何处理
+                        pass
+                    elif first_col_value == '':
+                        # 空字符串，继续使用当前分类
+                        pass
+                    else:
+                        # 如果第一列有内容，检查是否是新的分类名称
+                        # 使用更智能的分类识别逻辑
+                        is_category = self._is_likely_category_name(first_col_value)
+                        if is_category:
+                            # 这是一个新的分类名称
+                            current_category = first_col_value
+                            category_order += 1
+                            category_order_map[current_category] = category_order
+                            logger.info(f"识别到新分类: {current_category} (顺序: {category_order})")
+                        else:
+                            # 如果第一列内容看起来像菜品名称，则不更新分类
+                            logger.debug(f"第{row_idx}行第一列看起来像菜品名称，不更新分类: {first_col_value}")
+                            pass
                     
                     # 处理菜品数据
                     for col_idx, date_str in weekday_to_date.items():
@@ -288,9 +341,20 @@ class ExcelParser:
                                 for food in foods:
                                     food = food.strip()
                                     if food:
+                                        # 使用当前分类，如果没有则使用第一列的值
+                                        category_to_use = current_category
+                                        if not category_to_use and first_col_value not in ['NaN', 'nan', '']:
+                                            category_to_use = first_col_value
+                                        
+                                        # 获取分类顺序
+                                        cat_order = category_order_map.get(category_to_use, 0)
+                                        
+                                        item_order += 1
                                         menu_item = MenuItem(
                                             name=food,
-                                            category=first_col_value if first_col_value not in ['NaN', 'nan', ''] else None
+                                            category=category_to_use,
+                                            order=item_order,
+                                            category_order=cat_order
                                         )
                                         meal.add_item(menu_item)
                         except Exception as e:
@@ -646,6 +710,53 @@ class ExcelParser:
         
         # Default to lunch if no meal type specified
         return 'lunch'
+    
+    def _is_likely_category_name(self, text: str) -> bool:
+        """
+        判断文本是否可能是分类名称
+        
+        Args:
+            text: 要判断的文本
+            
+        Returns:
+            True if likely a category name, False otherwise
+        """
+        # 已知的分类名称列表
+        known_categories = {
+            '油炸食品', '小菜类', '营养鸡蛋', '粥品', '饮品类', '包点', '清炒时蔬', '传统风味',
+            '荤类', '半荤素', '蔬菜', '主食/面点', '控糖主食', '免费例汤', '炖罐', '捞化档口', 
+            '水果酸奶', '档口特色', '营养例汤', '盖浇饭套餐', '每日下午外卖包点'
+        }
+        
+        # 如果是已知分类，直接返回True
+        if text in known_categories:
+            return True
+        
+        # 分类名称的特征：
+        # 1. 长度通常不超过8个字符
+        # 2. 通常包含类别性词汇
+        # 3. 不包含具体的菜品描述词汇
+        
+        if len(text) > 8:
+            return False
+        
+        # 分类关键词
+        category_keywords = ['类', '品', '食', '汤', '罐', '档', '奶', '特色', '套餐', '包点', '主食', '例汤']
+        has_category_keyword = any(keyword in text for keyword in category_keywords)
+        
+        # 菜品描述词汇（这些通常出现在具体菜品名称中）
+        dish_keywords = ['红烧', '清蒸', '白灼', '爆炒', '糖醋', '麻辣', '香辣', '蒜蓉', '葱爆', '宫保']
+        has_dish_keyword = any(keyword in text for keyword in dish_keywords)
+        
+        # 如果包含分类关键词且不包含菜品描述词汇，可能是分类
+        if has_category_keyword and not has_dish_keyword:
+            return True
+        
+        # 如果长度很短（2-4字符）且不包含菜品描述词汇，也可能是分类
+        if 2 <= len(text) <= 4 and not has_dish_keyword:
+            return True
+        
+        return False
     
     def _normalize_meal_type(self, meal_str: str) -> Optional[str]:
         """

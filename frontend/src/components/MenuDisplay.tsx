@@ -149,8 +149,10 @@ const MenuDisplay: React.FC<MenuDisplayProps> = ({
 
   // 无菜单数据状态
   if (!menuData || !menuData.meals || menuData.meals.length === 0) {
-    const today = new Date().toISOString().split('T')[0];
-    const isToday = selectedDate === today;
+    // 使用本地时区格式化今天的日期，避免UTC转换问题
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const isToday = selectedDate === todayStr;
     
     return (
       <div className="menu-display">

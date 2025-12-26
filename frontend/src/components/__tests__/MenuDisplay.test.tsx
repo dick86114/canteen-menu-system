@@ -91,13 +91,14 @@ describe('MenuDisplay 组件', () => {
   });
 
   test('应该显示今天没有菜单的特殊提示', () => {
-    // 模拟今天的日期
-    const today = new Date().toISOString().split('T')[0];
+    // 模拟今天的日期 - 使用本地时区
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     
     render(
       <MenuDisplay 
         menuData={null} 
-        selectedDate={today} 
+        selectedDate={todayStr} 
         loading={false} 
       />
     );

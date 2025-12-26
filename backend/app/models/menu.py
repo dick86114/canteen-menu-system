@@ -18,11 +18,15 @@ class MenuItem:
         description: Optional description of the item
         category: Optional category (e.g., 'main', 'side', 'dessert')
         price: Optional price of the item
+        order: Order index for sorting (based on Excel position)
+        category_order: Order index of the category for sorting
     """
     name: str
     description: Optional[str] = None
     category: Optional[str] = None
     price: Optional[float] = None
+    order: int = 0
+    category_order: int = 0
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert MenuItem to dictionary for serialization."""
@@ -30,7 +34,9 @@ class MenuItem:
             'name': self.name,
             'description': self.description,
             'category': self.category,
-            'price': self.price
+            'price': self.price,
+            'order': self.order,
+            'category_order': self.category_order
         }
     
     @classmethod
@@ -40,7 +46,9 @@ class MenuItem:
             name=data['name'],
             description=data.get('description'),
             category=data.get('category'),
-            price=data.get('price')
+            price=data.get('price'),
+            order=data.get('order', 0),
+            category_order=data.get('category_order', 0)
         )
     
     def validate(self) -> bool:
@@ -75,10 +83,13 @@ class Meal:
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert Meal to dictionary for serialization."""
+        # 对菜品按分类顺序和菜品顺序排序
+        sorted_items = sorted(self.items, key=lambda item: (item.category_order, item.order))
+        
         return {
             'type': self.type,
             'time': self.time,
-            'items': [item.to_dict() for item in self.items]
+            'items': [item.to_dict() for item in sorted_items]
         }
     
     @classmethod
@@ -152,9 +163,12 @@ class MenuData:
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert MenuData to dictionary for serialization."""
+        # 对餐次按时间排序
+        sorted_meals = sorted(self.meals, key=lambda meal: meal.time)
+        
         return {
             'date': self.date,
-            'meals': [meal.to_dict() for meal in self.meals]
+            'meals': [meal.to_dict() for meal in sorted_meals]
         }
     
     @classmethod

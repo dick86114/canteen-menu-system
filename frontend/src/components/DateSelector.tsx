@@ -56,9 +56,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     return dates;
   };
 
-  // 格式化日期为字符串
+  // 格式化日期为字符串 - 使用本地时区，避免UTC转换问题
   const formatDateString = (date: Date): string => {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // 检查日期是否有菜单
@@ -434,7 +437,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
       {dateRangeInfo && (
         <div className="date-range-info">
           <i className="bi bi-info-circle me-2"></i>
-          可用日期：{formatShortDate(dateRangeInfo.start.toISOString().split('T')[0])} 至 {formatShortDate(dateRangeInfo.end.toISOString().split('T')[0])} 
+          可用日期：{formatShortDate(formatDate(dateRangeInfo.start))} 至 {formatShortDate(formatDate(dateRangeInfo.end))} 
           （共 {dateRangeInfo.count} 天）
         </div>
       )}
