@@ -465,18 +465,18 @@ body {
   }
 }
 
-/* 菜单显示 */
+/* 菜单显示 - 优化紧凑布局 */
 .menu-display {
   flex: 1;
 }
 
 .menu-date-header {
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-6);
 }
 
 .menu-date-header h2 {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--text-primary);
   margin-bottom: var(--space-2);
@@ -484,68 +484,69 @@ body {
 
 .menu-date-header .subtitle {
   color: var(--text-secondary);
-  font-size: 1rem;
+  font-size: 0.95rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
-/* 餐次卡片 */
+/* 餐次卡片 - 紧凑布局 */
 .meal-card {
   background: var(--bg-card);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
   overflow: hidden;
   transition: all var(--transition-normal);
 }
 
 .meal-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: var(--shadow-lg);
 }
 
 .meal-header {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   color: var(--text-white);
-  padding: var(--space-6);
+  padding: var(--space-4);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .meal-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
 }
 
 .meal-time {
   background: rgba(255, 255, 255, 0.2);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   font-weight: 600;
   backdrop-filter: blur(10px);
 }
 
 .meal-content {
-  padding: var(--space-6);
+  padding: var(--space-4);
 }
 
-/* 食物分类网格 */
+/* 食物分类网格 - 紧凑布局 */
 .food-categories {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-3);
 }
 
 .food-category {
   background: var(--bg-tertiary);
-  border-radius: var(--radius-xl);
-  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
   border: 1px solid var(--border-light);
   transition: all var(--transition-fast);
 }
@@ -556,11 +557,11 @@ body {
 }
 
 .category-title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--primary-color);
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-1);
   border-bottom: 2px solid var(--primary-light);
   text-align: center;
 }
@@ -568,35 +569,103 @@ body {
 .food-items {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
+/* 菜品项目 - 新的紧凑设计 */
 .food-item {
   background: var(--bg-card);
-  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   transition: all var(--transition-fast);
-  font-weight: 500;
-  color: var(--text-primary);
+  overflow: hidden;
 }
 
 .food-item:hover {
   background: var(--primary-color);
   color: var(--text-white);
-  transform: translateX(4px);
+  transform: translateX(2px);
   border-color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
 }
 
-/* 菜单统计 */
+.food-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2);
+  gap: var(--space-2);
+}
+
+.food-item-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.food-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
+}
+
+.food-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.food-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.food-description {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.food-item:hover .food-description {
+  opacity: 0.9;
+}
+
+.food-price {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.food-item:hover .food-price {
+  color: var(--text-white);
+}
+
+/* 菜单统计 - 紧凑布局 */
 .meal-stats {
   background: var(--bg-tertiary);
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-2) var(--space-4);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
+  border-top: 1px solid var(--border-light);
+}
+
+.meal-stats span {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 /* 空状态 */
@@ -741,7 +810,7 @@ footer {
   margin-top: auto;
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 优化紧凑布局 */
 @media (max-width: 768px) {
   .container {
     padding-left: var(--space-3);
@@ -784,24 +853,28 @@ footer {
   
   .food-categories {
     grid-template-columns: 1fr;
-    gap: var(--space-3);
+    gap: var(--space-2);
+  }
+  
+  .food-category {
+    padding: var(--space-2);
   }
   
   .meal-header {
-    padding: var(--space-4);
+    padding: var(--space-3);
     flex-direction: column;
     gap: var(--space-2);
     text-align: center;
   }
   
   .meal-content {
-    padding: var(--space-4);
+    padding: var(--space-3);
   }
   
   .meal-stats {
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-2) var(--space-3);
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-1);
     text-align: center;
   }
   
@@ -811,6 +884,39 @@ footer {
   
   .menu-date-header h2 {
     font-size: 1.5rem;
+  }
+  
+  .menu-date-header .subtitle {
+    font-size: 0.85rem;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+  
+  /* 档口特色移动端优化 */
+  .specialty-banner {
+    padding: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+  
+  .specialty-banner-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .specialty-banner-header i {
+    font-size: 1.1rem;
+  }
+  
+  .specialty-banner-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .specialty-dishes-list {
+    gap: var(--space-1);
+  }
+  
+  .specialty-dish-item {
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.8rem;
   }
 }
 
@@ -835,29 +941,71 @@ footer {
   }
   
   .meal-title {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
   
   .food-category {
-    padding: var(--space-4);
+    padding: var(--space-2);
   }
   
   .category-title {
-    font-size: 0.875rem;
+    font-size: 0.85rem;
+    margin-bottom: var(--space-2);
   }
   
-  .food-item {
-    padding: var(--space-2) var(--space-3);
-    font-size: 0.875rem;
+  .food-item-content {
+    padding: var(--space-1);
+  }
+  
+  .food-icon {
+    font-size: 1rem;
+    width: 20px;
+  }
+  
+  .food-name {
+    font-size: 0.85rem;
+  }
+  
+  .food-description {
+    font-size: 0.7rem;
+  }
+  
+  .food-price {
+    font-size: 0.8rem;
   }
   
   .date-range-info {
     font-size: 0.85rem;
     padding: var(--space-3) var(--space-4);
   }
+  
+  /* 档口特色小屏幕优化 */
+  .specialty-banner {
+    padding: var(--space-2);
+  }
+  
+  .specialty-banner-header {
+    flex-direction: row;
+    gap: var(--space-1);
+  }
+  
+  .specialty-banner-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .specialty-dishes-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .specialty-dish-item {
+    font-size: 0.75rem;
+    padding: 2px var(--space-1);
+  }
 }
 
-/* 深色模式支持 */
+/* 深色模式支持 - 修复文字颜色 */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-primary: #1e293b;
@@ -866,9 +1014,70 @@ footer {
     --bg-card: #1e293b;
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
-    --text-muted: #64748b;
+    --text-muted: #94a3b8;
     --border-color: #334155;
     --border-light: #475569;
+  }
+  
+  /* 确保菜品项目在暗黑模式下文字可见 */
+  .food-item {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+  
+  .food-name {
+    color: var(--text-primary);
+  }
+  
+  .food-description {
+    color: var(--text-secondary);
+  }
+  
+  .food-price {
+    color: var(--primary-light);
+  }
+  
+  .food-item:hover .food-price {
+    color: var(--text-white);
+  }
+  
+  /* 分类标题在暗黑模式下的颜色 */
+  .category-title {
+    color: var(--primary-light);
+  }
+  
+  /* 档口特色在暗黑模式下的适配 */
+  .specialty-category .food-item {
+    background: rgba(254, 243, 199, 0.1);
+    color: var(--text-primary);
+    border-color: rgba(245, 158, 11, 0.5);
+  }
+  
+  .specialty-category .food-item:hover {
+    background: var(--warning-color);
+    color: var(--text-white);
+  }
+  
+  .specialty-title {
+    color: var(--warning-color);
+  }
+  
+  /* 餐次卡片在暗黑模式下的适配 */
+  .meal-card {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+  }
+  
+  .meal-stats {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+  }
+  
+  /* 食物分类在暗黑模式下的适配 */
+  .food-category {
+    background: var(--bg-tertiary);
+    border-color: var(--border-light);
   }
 }
 
@@ -891,6 +1100,181 @@ footer {
   }
 }
 
+/* 档口特色样式 - 优化版本 */
+.specialty-banner {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffd700 100%);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-lg);
+  border: 2px solid #ff8c42;
+  position: relative;
+  overflow: hidden;
+  animation: specialtyGlow 3s ease-in-out infinite alternate;
+}
+
+.specialty-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: specialtyShine 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes specialtyGlow {
+  0% {
+    box-shadow: var(--shadow-lg), 0 0 15px rgba(255, 107, 53, 0.3);
+  }
+  100% {
+    box-shadow: var(--shadow-lg), 0 0 25px rgba(255, 107, 53, 0.5), 0 0 35px rgba(255, 215, 0, 0.3);
+  }
+}
+
+@keyframes specialtyShine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.specialty-banner-content {
+  text-align: center;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.specialty-banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.specialty-banner-header i {
+  font-size: 1.3rem;
+  color: #ffd700;
+  animation: specialtyStarTwinkle 2s ease-in-out infinite alternate;
+}
+
+.specialty-banner-header h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+@keyframes specialtyStarTwinkle {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+}
+
+.specialty-banner-subtitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  opacity: 0.95;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.specialty-dishes-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.specialty-dish-item {
+  background: rgba(255, 255, 255, 0.2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.85rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition: all var(--transition-fast);
+}
+
+.specialty-dish-item:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.specialty-dish-item i {
+  color: #ffd700;
+  font-size: 0.8rem;
+}
+
+/* 档口特色分类样式 - 与新布局一致 */
+.specialty-category {
+  border: 2px solid var(--warning-color);
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  box-shadow: var(--shadow-sm), 0 0 8px rgba(245, 158, 11, 0.15);
+}
+
+.specialty-category .food-item {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.specialty-category .food-item:hover {
+  background: var(--warning-color);
+  color: white;
+  border-color: var(--warning-color);
+}
+
+.specialty-category .food-item:hover .food-price {
+  color: white;
+}
+
+.specialty-title {
+  color: var(--warning-color);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.specialty-title i {
+  color: var(--warning-color);
+}
+
+/* 日期标题中的特色标识 */
+.menu-date-header .text-warning {
+  color: var(--warning-color);
+  font-weight: 700;
+}
+
+/* 减少动画效果（无障碍访问） */
+@media (prefers-reduced-motion: reduce) {
+  .specialty-banner,
+  .specialty-banner-header i {
+    animation: none;
+  }
+  
+  .specialty-banner::before {
+    display: none;
+  }
+}
+
 /* 打印样式 */
 @media print {
   .navbar,
@@ -903,5 +1287,17 @@ footer {
     break-inside: avoid;
     box-shadow: none;
     border: 1px solid #000;
+  }
+  
+  .specialty-banner,
+  .specialty-category {
+    background: #f5f5f5 !important;
+    border: 2px solid #333 !important;
+    box-shadow: none !important;
+  }
+  
+  .specialty-banner-content,
+  .specialty-title {
+    color: #000 !important;
   }
 }
