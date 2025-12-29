@@ -36,17 +36,33 @@ class HealthResource(Resource):
         try:
             # Basic health check
             from ..utils.timezone import now
+            from ..models import get_storage
             current_time = now()
+            
+            # 检查菜单数据状态
+            storage = get_storage()
+            available_dates = storage.get_available_dates()
+            menu_status = 'healthy' if available_dates else 'no_data'
             
             # Check dependent services (can be extended)
             services_status = {
                 'storage': 'healthy',  # In-memory storage is always available
                 'excel_parser': 'healthy',  # Excel parser service
+                'menu_data': menu_status,  # 菜单数据状态
+            }
+            
+            # 添加菜单数据信息
+            menu_info = {
+                'total_dates': len(available_dates),
+                'date_range': {
+                    'start': available_dates[0] if available_dates else None,
+                    'end': available_dates[-1] if available_dates else None
+                }
             }
             
             # Determine overall health
             overall_status = 'healthy' if all(
-                status == 'healthy' for status in services_status.values()
+                status in ['healthy', 'no_data'] for status in services_status.values()
             ) else 'unhealthy'
             
             return {
@@ -54,7 +70,8 @@ class HealthResource(Resource):
                 'timestamp': current_time.isoformat(),
                 'version': '1.0.0',  # Can be read from config or environment
                 'uptime': 'Available',  # Can be calculated from start time
-                'services': services_status
+                'services': services_status,
+                'menu_info': menu_info
             }
             
         except Exception as e:

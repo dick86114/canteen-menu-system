@@ -94,6 +94,33 @@ def create_app(config_name: str = "development") -> Flask:
         doc='/api/docs/'
     )
     
+    # 应用启动时自动加载菜单数据
+    @app.before_first_request
+    def auto_load_menu_data():
+        """应用启动时自动加载菜单数据"""
+        try:
+            from .services.file_scanner import FileScanner
+            from .models import get_storage
+            
+            # 检查是否已有数据
+            storage = get_storage()
+            available_dates = storage.get_available_dates()
+            
+            if not available_dates:
+                print("INFO: 检测到无菜单数据，开始自动加载...")
+                scanner = FileScanner()
+                result = scanner.scan_and_load_files()
+                
+                if result['success']:
+                    print(f"SUCCESS: 自动加载菜单数据成功 - {result['message']}")
+                else:
+                    print(f"WARNING: 自动加载菜单数据失败 - {result['message']}")
+            else:
+                print(f"INFO: 已有 {len(available_dates)} 天菜单数据，跳过自动加载")
+                
+        except Exception as e:
+            print(f"ERROR: 自动加载菜单数据时出错: {str(e)}")
+    
     # SPA路由处理 - 最低优先级，捕获所有其他路径
     @app.route('/<path:path>')
     def serve_spa(path):
