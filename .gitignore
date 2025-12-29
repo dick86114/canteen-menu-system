@@ -194,4 +194,24 @@ config.local.py
 # 菜单文件目录（保留结构但忽略内容）
 menu/*.xlsx
 menu/*.xls
+menu/*.et
 !menu/.gitkeep
+
+# 临时脚本和诊断文件
+*-temp.*
+*-debug.*
+*-test.*
+diagnose-*.bat
+diagnose-*.sh
+test-*.bat
+test-*.sh
+debug-*.bat
+debug-*.sh
+fix-*.bat
+fix-*.sh
+rebuild-*.bat
+rebuild-*.sh
+
+# API响应临时文件
+*-response.json
+*-menu-response.json
