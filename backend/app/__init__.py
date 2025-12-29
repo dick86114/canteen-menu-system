@@ -95,7 +95,6 @@ def create_app(config_name: str = "development") -> Flask:
     )
     
     # 应用启动时自动加载菜单数据
-    @app.before_first_request
     def auto_load_menu_data():
         """应用启动时自动加载菜单数据"""
         try:
@@ -120,6 +119,10 @@ def create_app(config_name: str = "development") -> Flask:
                 
         except Exception as e:
             print(f"ERROR: 自动加载菜单数据时出错: {str(e)}")
+    
+    # 在应用上下文中执行自动加载
+    with app.app_context():
+        auto_load_menu_data()
     
     # SPA路由处理 - 最低优先级，捕获所有其他路径
     @app.route('/<path:path>')
