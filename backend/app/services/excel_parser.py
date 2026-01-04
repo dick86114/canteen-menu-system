@@ -7,7 +7,7 @@ and convert them into structured MenuData objects.
 
 import pandas as pd
 from openpyxl import load_workbook
-from typing import List, Optional, Dict, Any, Union
+from typing import List, Optional, Dict, Any, Union, Tuple
 from datetime import datetime, date
 import re
 import logging
@@ -149,7 +149,13 @@ class ExcelParser:
         # Clean the DataFrame
         df = self._clean_dataframe(df)
         
-        # Try weekly format first (Chinese canteen style)
+        # Try horizontal weekly format first (new format with weekdays as columns)
+        try:
+            return self._parse_horizontal_weekly_format(df)
+        except Exception as e:
+            logger.info(f"Horizontal weekly format parsing failed: {e}, trying standard weekly format")
+        
+        # Try weekly format (Chinese canteen style)
         try:
             return self._parse_weekly_format(df)
         except Exception as e:
@@ -371,6 +377,559 @@ class ExcelParser:
         
         logger.info(f"成功解析weekly格式，生成{len(result)}天菜单")
         return sorted(result, key=lambda x: x.date)
+    
+    def _parse_horizontal_weekly_format(self, df: pd.DataFrame) -> List[MenuData]:
+        """
+        Parse horizontal weekly format where weekdays are columns and categories are rows.
+        Enhanced version with multi-meal support.
+        
+        This format has:
+        - First row: title (e.g., "食堂菜单（1月4-9日）")
+        - Second row: meal type (e.g., "早餐")
+        - Third row: weekday headers (星期天, 星期一, etc.)
+        - Following rows: categories and food items
+        
+        Args:
+            df: DataFrame with horizontal weekly structure
+            
+        Returns:
+            List of MenuData objects
+        """
+        logger.info("尝试解析横向weekly格式（支持多餐次）")
+        
+        try:
+            return self._parse_horizontal_weekly_format_multi_meal(df)
+        except Exception as e:
+            logger.warning(f"多餐次解析失败，回退到原始方法: {e}")
+            return self._parse_horizontal_weekly_format_single_meal(df)
+    
+    def _parse_horizontal_weekly_format_multi_meal(self, df: pd.DataFrame) -> List[MenuData]:
+        """
+        增强的横向格式解析器，支持多餐次识别
+        """
+        logger.info("使用多餐次解析器")
+        
+        # 1. 找到星期标题行
+        weekday_row_idx, weekday_cols = self._find_weekday_headers(df)
+        if not weekday_cols:
+            raise ExcelParsingError("Could not find weekday headers in horizontal format")
+        
+        # 2. 识别餐次分段
+        from .meal_segment_identifier import MealSegmentIdentifier
+        segment_identifier = MealSegmentIdentifier()
+        meal_segments = segment_identifier.identify_meal_segments(df, weekday_row_idx)
+        
+        logger.info(f"识别到 {len(meal_segments)} 个餐次分段")
+        for i, segment in enumerate(meal_segments):
+            logger.info(f"分段{i+1}: {segment.meal_type}, 行{segment.start_row}-{segment.end_row}")
+        
+        # 3. 提取基准日期
+        base_date = self._extract_base_date_from_df(df)
+        if not base_date:
+            raise ExcelParsingError("Could not determine base date for horizontal weekly format")
+        
+        # 4. 为每个星期和每个餐次解析菜单数据
+        result = []
+        
+        for col_idx, (weekday_name, weekday_num) in weekday_cols.items():
+            menu_date = self._calculate_date_for_weekday(base_date, weekday_num)
+            meals = []
+            
+            # 为每个餐次分段创建Meal对象
+            for segment in meal_segments:
+                items = self._extract_items_from_segment(df, segment, col_idx)
+                
+                if items:  # 只有当有菜品时才创建餐次
+                    meal_times = {
+                        'breakfast': '07:30',
+                        'lunch': '12:00',
+                        'dinner': '18:00'
+                    }
+                    
+                    meal = Meal(
+                        type=segment.meal_type,
+                        time=meal_times.get(segment.meal_type, '12:00'),
+                        items=items
+                    )
+                    meals.append(meal)
+            
+            if meals:
+                menu_data = MenuData(
+                    date=menu_date.strftime('%Y-%m-%d'),
+                    meals=meals
+                )
+                result.append(menu_data)
+                logger.info(f"解析{weekday_name}({menu_date})菜单，共{len(meals)}个餐次")
+        
+        if not result:
+            raise ExcelParsingError("No valid menu data found in horizontal weekly format")
+        
+        logger.info(f"成功解析横向weekly格式，生成{len(result)}天菜单")
+        return sorted(result, key=lambda x: x.date)
+    
+    def _find_weekday_headers(self, df: pd.DataFrame) -> Tuple[Optional[int], Dict[int, Tuple[str, int]]]:
+        """
+        找到星期标题行
+        
+        Returns:
+            Tuple[Optional[int], Dict[int, Tuple[str, int]]]: (行索引, {列索引: (星期名, 星期数)})
+        """
+        weekday_row_idx = None
+        weekday_cols = {}
+        
+        for row_idx in range(min(5, len(df))):
+            row_data = df.iloc[row_idx].astype(str)
+            weekday_found = False
+            
+            for col_idx, cell_value in enumerate(row_data):
+                if pd.isna(cell_value) or cell_value.strip() == 'nan':
+                    continue
+                    
+                cell_value = str(cell_value).strip()
+                
+                # Check for weekday patterns
+                weekdays = {
+                    '星期天': 6, '星期日': 6, '周日': 6, '日': 6,
+                    '星期一': 0, '周一': 0, '一': 0,
+                    '星期二': 1, '周二': 1, '二': 1,
+                    '星期三': 2, '周三': 2, '三': 2,
+                    '星期四': 3, '周四': 3, '四': 3,
+                    '星期五': 4, '周五': 4, '五': 4,
+                    '星期六': 5, '周六': 5, '六': 5,
+                }
+                
+                for weekday_name, weekday_num in weekdays.items():
+                    if weekday_name in cell_value:
+                        weekday_row_idx = row_idx
+                        weekday_cols[col_idx] = (weekday_name, weekday_num)
+                        weekday_found = True
+                        break
+            
+            if weekday_found:
+                break
+        
+        return weekday_row_idx, weekday_cols
+    
+    def _extract_base_date_from_df(self, df: pd.DataFrame) -> Optional[date]:
+        """从DataFrame中提取基准日期"""
+        # Try to extract from filename first
+        if hasattr(self, '_current_filename'):
+            base_date = self._extract_date_from_filename_string(self._current_filename)
+            if base_date:
+                return base_date
+        
+        # Try to extract from title row
+        if len(df) > 0:
+            title_row = df.iloc[0, 0] if len(df) > 0 else ""
+            base_date = self._extract_date_from_title(str(title_row))
+            if base_date:
+                return base_date
+        
+        return None
+    
+    def _extract_items_from_segment(self, df: pd.DataFrame, segment, col_idx: int) -> List[MenuItem]:
+        """从餐次分段中提取菜品"""
+        items = []
+        current_category = None
+        item_order = 0
+        category_order = 0
+        category_order_map = {}
+        
+        for row_idx in range(segment.start_row, segment.end_row + 1):
+            # 检查第一列是否是分类
+            category_cell = str(df.iloc[row_idx, 0]).strip()
+            if category_cell and category_cell != 'nan' and not pd.isna(df.iloc[row_idx, 0]):
+                if category_cell not in ['类别', '早餐', '午餐', '晚餐']:
+                    current_category = category_cell
+                    if current_category not in category_order_map:
+                        category_order_map[current_category] = category_order
+                        category_order += 1
+            
+            # 获取该星期的菜品
+            if col_idx < len(df.columns):
+                food_cell = df.iloc[row_idx, col_idx]
+                if pd.isna(food_cell) or str(food_cell).strip() in ['', 'nan']:
+                    continue
+                
+                food_items = str(food_cell).strip()
+                if food_items:
+                    # 分割多个菜品
+                    item_list = re.split(r'[,，、；;]', food_items)
+                    for item_name in item_list:
+                        item_name = item_name.strip()
+                        if item_name and item_name != 'nan':
+                            items.append(MenuItem(
+                                name=item_name,
+                                category=current_category or '其他',
+                                description=None,
+                                price=None,
+                                order=item_order,
+                                category_order=category_order_map.get(current_category, 0)
+                            ))
+                            item_order += 1
+        
+        return items
+    
+    def _parse_horizontal_weekly_format_single_meal(self, df: pd.DataFrame) -> List[MenuData]:
+        """
+        原始的单餐次解析方法（作为回退）
+        """
+        logger.info("使用单餐次回退解析器")
+        
+        # Find the row with weekday headers
+        weekday_row_idx = None
+        weekday_cols = {}
+        
+        for row_idx in range(min(5, len(df))):
+            row_data = df.iloc[row_idx].astype(str)
+            weekday_found = False
+            
+            for col_idx, cell_value in enumerate(row_data):
+                if pd.isna(cell_value) or cell_value.strip() == 'nan':
+                    continue
+                    
+                cell_value = str(cell_value).strip()
+                
+                # Check for weekday patterns
+                weekdays = {
+                    '星期天': 6, '星期日': 6, '周日': 6, '日': 6,
+                    '星期一': 0, '周一': 0, '一': 0,
+                    '星期二': 1, '周二': 1, '二': 1,
+                    '星期三': 2, '周三': 2, '三': 2,
+                    '星期四': 3, '周四': 3, '四': 3,
+                    '星期五': 4, '周五': 4, '五': 4,
+                    '星期六': 5, '周六': 5, '六': 5,
+                }
+                
+                for weekday_name, weekday_num in weekdays.items():
+                    if weekday_name in cell_value:
+                        weekday_row_idx = row_idx
+                        weekday_cols[col_idx] = (weekday_name, weekday_num)
+                        weekday_found = True
+                        break
+            
+            if weekday_found:
+                break
+        
+        if not weekday_cols:
+            raise ExcelParsingError("Could not find weekday headers in horizontal format")
+        
+        logger.info(f"找到星期标题行: {weekday_row_idx}, 列映射: {weekday_cols}")
+        
+        # Find meal type (should be in a row before weekday headers)
+        meal_type = 'lunch'  # default
+        for row_idx in range(max(0, weekday_row_idx - 2), weekday_row_idx):
+            for col_idx in range(len(df.columns)):
+                cell_value = str(df.iloc[row_idx, col_idx]).strip()
+                if cell_value in ['早餐', 'breakfast']:
+                    meal_type = 'breakfast'
+                elif cell_value in ['午餐', '中餐', 'lunch']:
+                    meal_type = 'lunch'
+                elif cell_value in ['晚餐', 'dinner']:
+                    meal_type = 'dinner'
+        
+        # Extract date range from filename or title
+        base_date = self._extract_base_date_from_df(df)
+        if not base_date:
+            raise ExcelParsingError("Could not determine base date for horizontal weekly format")
+        
+        # Parse menu data for each weekday
+        result = []
+        
+        for col_idx, (weekday_name, weekday_num) in weekday_cols.items():
+            # Calculate the actual date for this weekday
+            menu_date = self._calculate_date_for_weekday(base_date, weekday_num)
+            
+            # Extract food items for this day
+            items = []
+            current_category = None
+            
+            # Start from the row after weekday headers
+            for row_idx in range(weekday_row_idx + 1, len(df)):
+                # Check first column for category
+                category_cell = str(df.iloc[row_idx, 0]).strip()
+                if category_cell and category_cell != 'nan' and not pd.isna(df.iloc[row_idx, 0]):
+                    current_category = category_cell
+                
+                # Get food item for this day
+                if col_idx < len(df.columns):
+                    food_cell = df.iloc[row_idx, col_idx]
+                    if pd.isna(food_cell) or str(food_cell).strip() in ['', 'nan']:
+                        continue
+                    
+                    food_items = str(food_cell).strip()
+                    if food_items:
+                        # Split multiple items (separated by comma, 、, or other delimiters)
+                        item_list = re.split(r'[,，、；;]', food_items)
+                        for item_name in item_list:
+                            item_name = item_name.strip()
+                            if item_name and item_name != 'nan':
+                                items.append(MenuItem(
+                                    name=item_name,
+                                    category=current_category or '其他',
+                                    description=None,
+                                    price=None
+                                ))
+            
+            if items:
+                # Create meal with default time based on meal type
+                meal_times = {
+                    'breakfast': '07:30',
+                    'lunch': '12:00',
+                    'dinner': '18:00'
+                }
+                
+                meal = Meal(
+                    type=meal_type,
+                    time=meal_times.get(meal_type, '12:00'),
+                    items=items
+                )
+                
+                menu_data = MenuData(
+                    date=menu_date.strftime('%Y-%m-%d'),
+                    meals=[meal]
+                )
+                
+                result.append(menu_data)
+                logger.info(f"解析{weekday_name}({menu_date})菜单，共{len(items)}道菜")
+        
+        if not result:
+            raise ExcelParsingError("No valid menu data found in horizontal weekly format")
+        
+        logger.info(f"成功解析横向weekly格式（单餐次），生成{len(result)}天菜单")
+        return sorted(result, key=lambda x: x.date)
+        weekday_cols = {}
+        
+        for row_idx in range(min(5, len(df))):
+            row_data = df.iloc[row_idx].astype(str)
+            weekday_found = False
+            
+            for col_idx, cell_value in enumerate(row_data):
+                if pd.isna(cell_value) or cell_value.strip() == 'nan':
+                    continue
+                    
+                cell_value = str(cell_value).strip()
+                
+                # Check for weekday patterns
+                weekdays = {
+                    '星期天': 6, '星期日': 6, '周日': 6, '日': 6,
+                    '星期一': 0, '周一': 0, '一': 0,
+                    '星期二': 1, '周二': 1, '二': 1,
+                    '星期三': 2, '周三': 2, '三': 2,
+                    '星期四': 3, '周四': 3, '四': 3,
+                    '星期五': 4, '周五': 4, '五': 4,
+                    '星期六': 5, '周六': 5, '六': 5,
+                }
+                
+                for weekday_name, weekday_num in weekdays.items():
+                    if weekday_name in cell_value:
+                        weekday_row_idx = row_idx
+                        weekday_cols[col_idx] = (weekday_name, weekday_num)
+                        weekday_found = True
+                        break
+            
+            if weekday_found:
+                break
+        
+        if not weekday_cols:
+            raise ExcelParsingError("Could not find weekday headers in horizontal format")
+        
+        logger.info(f"找到星期标题行: {weekday_row_idx}, 列映射: {weekday_cols}")
+        
+        # Find meal type (should be in a row before weekday headers)
+        meal_type = 'lunch'  # default
+        for row_idx in range(max(0, weekday_row_idx - 2), weekday_row_idx):
+            for col_idx in range(len(df.columns)):
+                cell_value = str(df.iloc[row_idx, col_idx]).strip()
+                if cell_value in ['早餐', 'breakfast']:
+                    meal_type = 'breakfast'
+                elif cell_value in ['午餐', '中餐', 'lunch']:
+                    meal_type = 'lunch'
+                elif cell_value in ['晚餐', 'dinner']:
+                    meal_type = 'dinner'
+        
+        # Extract date range from filename or title
+        base_date = None
+        
+        # Try to extract from filename
+        if hasattr(self, '_current_filename'):
+            base_date = self._extract_date_from_filename_string(self._current_filename)
+        
+        if not base_date:
+            # Try to extract from title row
+            title_row = df.iloc[0, 0] if len(df) > 0 else ""
+            base_date = self._extract_date_from_title(str(title_row))
+        
+        if not base_date:
+            raise ExcelParsingError("Could not determine base date for horizontal weekly format")
+        
+        # Parse menu data for each weekday
+        result = []
+        
+        for col_idx, (weekday_name, weekday_num) in weekday_cols.items():
+            # Calculate the actual date for this weekday
+            menu_date = self._calculate_date_for_weekday(base_date, weekday_num)
+            
+            # Extract food items for this day
+            items = []
+            current_category = None
+            
+            # Start from the row after weekday headers
+            for row_idx in range(weekday_row_idx + 1, len(df)):
+                # Check first column for category
+                category_cell = str(df.iloc[row_idx, 0]).strip()
+                if category_cell and category_cell != 'nan' and not pd.isna(df.iloc[row_idx, 0]):
+                    current_category = category_cell
+                
+                # Get food item for this day
+                if col_idx < len(df.columns):
+                    food_cell = df.iloc[row_idx, col_idx]
+                    if pd.isna(food_cell) or str(food_cell).strip() in ['', 'nan']:
+                        continue
+                    
+                    food_items = str(food_cell).strip()
+                    if food_items:
+                        # Split multiple items (separated by comma, 、, or other delimiters)
+                        item_list = re.split(r'[,，、；;]', food_items)
+                        for item_name in item_list:
+                            item_name = item_name.strip()
+                            if item_name and item_name != 'nan':
+                                items.append(MenuItem(
+                                    name=item_name,
+                                    category=current_category or '其他',
+                                    description=None,
+                                    price=None
+                                ))
+            
+            if items:
+                # Create meal with default time based on meal type
+                meal_times = {
+                    'breakfast': '07:30',
+                    'lunch': '12:00',
+                    'dinner': '18:00'
+                }
+                
+                meal = Meal(
+                    type=meal_type,
+                    time=meal_times.get(meal_type, '12:00'),
+                    items=items
+                )
+                
+                menu_data = MenuData(
+                    date=menu_date.strftime('%Y-%m-%d'),  # 转换为字符串格式
+                    meals=[meal]
+                )
+                
+                result.append(menu_data)
+                logger.info(f"解析{weekday_name}({menu_date})菜单，共{len(items)}道菜")
+        
+        if not result:
+            raise ExcelParsingError("No valid menu data found in horizontal weekly format")
+        
+        logger.info(f"成功解析横向weekly格式，生成{len(result)}天菜单")
+        return sorted(result, key=lambda x: x.date)
+    
+    def _extract_date_from_title(self, title: str) -> Optional[date]:
+        """Extract date from title string like '食堂菜单（1月4-9日）'"""
+        try:
+            # Pattern for Chinese date format like "1月4-9日" or "1月4日-9日"
+            pattern = r'(\d+)月(\d+)[-–]?(\d*)日?'
+            match = re.search(pattern, title)
+            if match:
+                month = int(match.group(1))
+                start_day = int(match.group(2))
+                
+                # Use current year
+                current_year = datetime.now().year
+                return date(current_year, month, start_day)
+        except Exception as e:
+            logger.warning(f"Could not extract date from title '{title}': {e}")
+        
+        return None
+    
+    def _extract_date_from_filename_string(self, filename: str) -> Optional[date]:
+        """Extract date from filename string"""
+        try:
+            # 优先尝试包含年份的完整格式
+            # 格式1: "2025年12月15-19" 或 "2026年1月4日-9日"
+            year_pattern = r'(\d{4})年(\d{1,2})月(\d{1,2})日?[-–](\d{1,2})日?'
+            match = re.search(year_pattern, filename)
+            if match:
+                year = int(match.group(1))
+                month = int(match.group(2))
+                start_day = int(match.group(3))
+                logger.info(f"从文件名提取完整日期: {year}年{month}月{start_day}日")
+                return date(year, month, start_day)
+            
+            # 回退到只有月日的格式（使用智能年份推断）
+            # 格式2: "1月4日-9日" 或 "1月4-9日"
+            month_pattern = r'(\d{1,2})月(\d{1,2})日?[-–](\d{1,2})日?'
+            match = re.search(month_pattern, filename)
+            if match:
+                month = int(match.group(1))
+                start_day = int(match.group(2))
+                
+                # 使用智能年份推断
+                inferred_year = self._infer_year_from_month(month)
+                logger.info(f"从文件名提取月日，推断年份: {inferred_year}年{month}月{start_day}日")
+                return date(inferred_year, month, start_day)
+                
+        except Exception as e:
+            logger.warning(f"Could not extract date from filename '{filename}': {e}")
+        
+        return None
+    
+    def _infer_year_from_month(self, month: int) -> int:
+        """
+        基于月份智能推断年份
+        
+        Args:
+            month: 月份 (1-12)
+            
+        Returns:
+            推断的年份
+        """
+        current_date = datetime.now()
+        current_month = current_date.month
+        current_year = current_date.year
+        
+        # 策略：基于时间窗口的推断
+        if current_month <= 6:  # 当前是上半年 (1-6月)
+            if month >= 7:  # 目标是下半年 (7-12月) -> 上一年
+                return current_year - 1
+            else:  # 目标是上半年 (1-6月) -> 当前年
+                return current_year
+        else:  # 当前是下半年 (7-12月)
+            if month <= 6:  # 目标是上半年 (1-6月) -> 下一年
+                return current_year + 1
+            else:  # 目标是下半年 (7-12月) -> 当前年
+                return current_year
+    
+    def _calculate_date_for_weekday(self, base_date: date, target_weekday: int) -> date:
+        """
+        Calculate the actual date for a given weekday based on a base date.
+        
+        Args:
+            base_date: Base date (usually the start of the week)
+            target_weekday: Target weekday (0=Monday, 6=Sunday)
+            
+        Returns:
+            The calculated date
+        """
+        from datetime import timedelta
+        
+        # Get the weekday of the base date (0=Monday, 6=Sunday)
+        base_weekday = base_date.weekday()
+        
+        # Calculate the difference in days
+        days_diff = target_weekday - base_weekday
+        
+        # If the target weekday is before the base weekday in the same week,
+        # it might be in the next week
+        if days_diff < 0:
+            days_diff += 7
+        
+        return base_date + timedelta(days=days_diff)
     
     def _parse_standard_format(self, df: pd.DataFrame) -> List[MenuData]:
         """
