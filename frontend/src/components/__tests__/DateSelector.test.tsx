@@ -20,10 +20,12 @@ describe('DateSelector 组件', () => {
 
   test('应该正确渲染日期选择器', () => {
     render(<DateSelector {...defaultProps} />);
-    
+
     // 检查是否显示当前日期（使用更具体的选择器）
-    expect(screen.getByRole('heading', { name: /12月15日/ })).toBeInTheDocument();
-    
+    expect(
+      screen.getByRole('heading', { name: /12月15日/ })
+    ).toBeInTheDocument();
+
     // 检查导航按钮
     expect(screen.getByTitle('前一天')).toBeInTheDocument();
     expect(screen.getByTitle('后一天')).toBeInTheDocument();
@@ -32,27 +34,27 @@ describe('DateSelector 组件', () => {
 
   test('应该显示正确的日期计数', () => {
     render(<DateSelector {...defaultProps} />);
-    
+
     // 检查日期计数显示
     expect(screen.getByText(/第 2 天 \/ 共 3 天/)).toBeInTheDocument();
   });
 
   test('前一天按钮应该正常工作', () => {
     render(<DateSelector {...defaultProps} />);
-    
+
     const prevButton = screen.getByTitle('前一天');
     fireEvent.click(prevButton);
-    
+
     // 现在按照常规日历逻辑：2023-12-15 的前一天是 2023-12-14
     expect(mockOnDateChange).toHaveBeenCalledWith('2023-12-14');
   });
 
   test('后一天按钮应该正常工作', () => {
     render(<DateSelector {...defaultProps} />);
-    
+
     const nextButton = screen.getByTitle('后一天');
     fireEvent.click(nextButton);
-    
+
     // 现在按照常规日历逻辑：2023-12-15 的后一天是 2023-12-16
     expect(mockOnDateChange).toHaveBeenCalledWith('2023-12-16');
   });
@@ -62,9 +64,9 @@ describe('DateSelector 组件', () => {
       ...defaultProps,
       selectedDate: '2020-01-01', // 设置的最早边界日期
     };
-    
+
     render(<DateSelector {...props} />);
-    
+
     const prevButton = screen.getByTitle('前一天');
     expect(prevButton).toBeDisabled();
   });
@@ -73,21 +75,21 @@ describe('DateSelector 组件', () => {
     // 设置一个接近最大边界的日期（当前年份+1年）
     const currentYear = new Date().getFullYear();
     const futureDateStr = `${currentYear + 1}-12-31`;
-    
+
     const props = {
       ...defaultProps,
       selectedDate: futureDateStr,
     };
-    
+
     render(<DateSelector {...props} />);
-    
+
     const nextButton = screen.getByTitle('后一天');
     expect(nextButton).toBeDisabled();
   });
 
   test('应该显示可用日期范围信息', () => {
     render(<DateSelector {...defaultProps} />);
-    
+
     expect(screen.getByText(/可用日期：/)).toBeInTheDocument();
     expect(screen.getAllByText(/共 3 天/)).toHaveLength(2); // 出现在两个地方：日期计数和范围信息
   });
@@ -97,10 +99,12 @@ describe('DateSelector 组件', () => {
       ...defaultProps,
       availableDates: [],
     };
-    
+
     render(<DateSelector {...props} />);
-    
-    expect(screen.getByText('请先上传菜单文件或刷新菜单数据')).toBeInTheDocument();
+
+    expect(
+      screen.getByText('请先上传菜单文件或刷新菜单数据')
+    ).toBeInTheDocument();
   });
 
   test('加载状态应该显示加载指示器', () => {
@@ -108,16 +112,18 @@ describe('DateSelector 组件', () => {
       ...defaultProps,
       loading: true,
     };
-    
+
     render(<DateSelector {...props} />);
-    
+
     expect(screen.getByText('正在加载日期...')).toBeInTheDocument();
-    expect(screen.getByText('正在加载日期...').previousElementSibling).toHaveClass('loading-spinner');
+    expect(
+      screen.getByText('正在加载日期...').previousElementSibling
+    ).toHaveClass('loading-spinner');
   });
 
   test('月历按钮应该存在', () => {
     render(<DateSelector {...defaultProps} />);
-    
+
     const calendarButton = screen.getByTitle('打开月历选择日期');
     expect(calendarButton).toBeInTheDocument();
     expect(calendarButton).toHaveTextContent('月历');
@@ -125,10 +131,10 @@ describe('DateSelector 组件', () => {
 
   test('今天按钮应该导航到今天的日期', () => {
     render(<DateSelector {...defaultProps} />);
-    
+
     const todayButton = screen.getByTitle('今天或最近');
     fireEvent.click(todayButton);
-    
+
     // 验证今天按钮被点击后会调用onDateChange
     // 由于使用真实的Date，我们只验证函数被调用了
     expect(mockOnDateChange).toHaveBeenCalled();
@@ -140,12 +146,12 @@ describe('DateSelector 组件', () => {
       ...defaultProps,
       availableDates: ['2023-12-14', '2023-12-15', '2023-12-16'],
     };
-    
+
     render(<DateSelector {...props} />);
-    
+
     const todayButton = screen.getByTitle('今天或最近');
     fireEvent.click(todayButton);
-    
+
     // 验证今天按钮被点击后会调用onDateChange
     // 由于使用真实的Date，我们只验证函数被调用了
     expect(mockOnDateChange).toHaveBeenCalled();

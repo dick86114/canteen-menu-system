@@ -1,0 +1,64 @@
+/* 手势处理器容器 */
+.gesture-handler {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* 优化触摸性能 */
+  -webkit-overflow-scrolling: touch;
+  /* GPU 加速 */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* 禁用状态 */
+.gesture-handler.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* 滑动切换动画类（已在 animations.scss 中定义） */
+.gesture-handler.menu-slide-enter {
+  animation: slideInRight 250ms ease-out;
+}
+
+.gesture-handler.menu-slide-exit {
+  animation: slideInLeft 250ms ease-out;
+}
+
+.gesture-handler.bounce-back {
+  animation: bounceBack 300ms ease-in-out;
+}
+
+/* 移动端优化 */
+@media (max-width: 767px) {
+  .gesture-handler {
+    /* 增加触摸目标区域 */
+    min-height: 100vh;
+    /* 防止 iOS 回弹效果干扰 */
+    overscroll-behavior: none;
+  }
+}
+
+/* 触摸反馈 */
+.gesture-handler:active {
+  cursor: grabbing;
+}
+
+/* 加载状态指示器（可选） */
+.gesture-handler.loading {
+  pointer-events: none;
+}
+
+.gesture-handler.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}

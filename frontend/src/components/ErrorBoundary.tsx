@@ -25,10 +25,10 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // 记录错误信息
     console.error('ErrorBoundary 捕获到错误:', error, errorInfo);
-    
+
     this.setState({
       error,
-      errorInfo
+      errorInfo,
     });
 
     // 这里可以将错误信息发送到错误报告服务
@@ -63,37 +63,40 @@ class ErrorBoundary extends Component<Props, State> {
                     <div className="text-center mb-4">
                       <i className="bi bi-bug display-1 text-danger"></i>
                     </div>
-                    
-                    <h6 className="text-danger mb-3">很抱歉，应用程序遇到了意外错误</h6>
-                    
+
+                    <h6 className="text-danger mb-3">
+                      很抱歉，应用程序遇到了意外错误
+                    </h6>
+
                     <p className="text-muted mb-4">
                       我们已经记录了这个错误，开发团队会尽快修复。
                       您可以尝试刷新页面或稍后再试。
                     </p>
 
                     {/* 开发环境下显示详细错误信息 */}
-                    {process.env.NODE_ENV === 'development' && this.state.error && (
-                      <details className="mb-4">
-                        <summary className="btn btn-outline-secondary btn-sm mb-2">
-                          查看技术详情
-                        </summary>
-                        <div className="alert alert-secondary">
-                          <h6>错误信息:</h6>
-                          <pre className="small text-danger mb-2">
-                            {this.state.error.toString()}
-                          </pre>
-                          
-                          {this.state.errorInfo && (
-                            <>
-                              <h6>组件堆栈:</h6>
-                              <pre className="small text-muted">
-                                {this.state.errorInfo.componentStack}
-                              </pre>
-                            </>
-                          )}
-                        </div>
-                      </details>
-                    )}
+                    {process.env.NODE_ENV === 'development' &&
+                      this.state.error && (
+                        <details className="mb-4">
+                          <summary className="btn btn-outline-secondary btn-sm mb-2">
+                            查看技术详情
+                          </summary>
+                          <div className="alert alert-secondary">
+                            <h6>错误信息:</h6>
+                            <pre className="small text-danger mb-2">
+                              {this.state.error.toString()}
+                            </pre>
+
+                            {this.state.errorInfo && (
+                              <>
+                                <h6>组件堆栈:</h6>
+                                <pre className="small text-muted">
+                                  {this.state.errorInfo.componentStack}
+                                </pre>
+                              </>
+                            )}
+                          </div>
+                        </details>
+                      )}
 
                     <div className="d-flex gap-2 justify-content-center">
                       <button
@@ -103,7 +106,7 @@ class ErrorBoundary extends Component<Props, State> {
                         <i className="bi bi-arrow-clockwise me-2"></i>
                         重试
                       </button>
-                      
+
                       <button
                         className="btn btn-outline-secondary"
                         onClick={() => window.location.reload()}
@@ -113,11 +116,9 @@ class ErrorBoundary extends Component<Props, State> {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="card-footer text-muted text-center">
-                    <small>
-                      如果问题持续存在，请联系技术支持
-                    </small>
+                    <small>如果问题持续存在，请联系技术支持</small>
                   </div>
                 </div>
               </div>

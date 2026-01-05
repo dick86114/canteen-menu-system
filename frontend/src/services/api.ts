@@ -2,9 +2,10 @@ import axios, { AxiosError } from 'axios';
 import { MenuResponse, DatesResponse } from '../types';
 
 // API 基础配置
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api'  // 生产环境使用相对路径，让浏览器使用当前域名和端口
-  : '/api';  // 开发环境使用相对路径，利用Vite代理
+const API_BASE_URL =
+  process.env.NODE_ENV === 'production'
+    ? '/api' // 生产环境使用相对路径，让浏览器使用当前域名和端口
+    : '/api'; // 开发环境使用相对路径，利用Vite代理
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -23,8 +24,8 @@ const defaultRetryConfig: RetryConfig = {
   retryDelay: 1000, // 1秒
   retryCondition: (error: AxiosError) => {
     // 只对网络错误和5xx服务器错误重试
-    return !error.response || (error.response.status >= 500);
-  }
+    return !error.response || error.response.status >= 500;
+  },
 };
 
 // 带重试机制的请求函数
@@ -33,33 +34,35 @@ const requestWithRetry = async <T>(
   config: RetryConfig = defaultRetryConfig
 ): Promise<T> => {
   let lastError: AxiosError;
-  
+
   for (let attempt = 0; attempt <= config.retries; attempt++) {
     try {
       return await requestFn();
     } catch (error) {
       lastError = error as AxiosError;
-      
+
       // 如果是最后一次尝试，或者不满足重试条件，直接抛出错误
       if (attempt === config.retries || !config.retryCondition?.(lastError)) {
         throw lastError;
       }
-      
+
       // 等待后重试
-      await new Promise(resolve => setTimeout(resolve, config.retryDelay * (attempt + 1)));
+      await new Promise(resolve =>
+        setTimeout(resolve, config.retryDelay * (attempt + 1))
+      );
     }
   }
-  
+
   throw lastError!;
 };
 
 // 请求拦截器 - 添加请求日志
 api.interceptors.request.use(
-  (config) => {
+  config => {
     console.log(`API请求: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
-  (error) => {
+  error => {
     console.error('API请求错误:', error);
     return Promise.reject(error);
   }
@@ -67,7 +70,7 @@ api.interceptors.request.use(
 
 // 响应拦截器 - 统一错误处理和日志
 api.interceptors.response.use(
-  (response) => {
+  response => {
     console.log(`API响应: ${response.status} ${response.config.url}`);
     return response;
   },
@@ -183,7 +186,10 @@ export const checkNetworkConnection = async (): Promise<boolean> => {
 };
 
 // 健康检查
-export const healthCheck = async (): Promise<{ status: string; timestamp: string }> => {
+export const healthCheck = async (): Promise<{
+  status: string;
+  timestamp: string;
+}> => {
   try {
     const response = await api.get('/health', { timeout: 5000 });
     return response.data;
@@ -193,7 +199,10 @@ export const healthCheck = async (): Promise<{ status: string; timestamp: string
 };
 
 // 简单的ping检查
-export const pingServer = async (): Promise<{ message: string; timestamp: string }> => {
+export const pingServer = async (): Promise<{
+  message: string;
+  timestamp: string;
+}> => {
   try {
     const response = await api.get('/ping', { timeout: 3000 });
     return response.data;
@@ -208,7 +217,7 @@ export const handleApiError = (error: any): string => {
     // 服务器返回错误状态码
     const status = error.response.status;
     const message = error.response.data?.message;
-    
+
     switch (status) {
       case 400:
         return message || '请求参数错误';
@@ -260,5 +269,9 @@ export const isServerError = (error: any): boolean => {
 };
 
 export const isClientError = (error: any): boolean => {
-  return error.response && error.response.status >= 400 && error.response.status < 500;
+  return (
+    error.response &&
+    error.response.status >= 400 &&
+    error.response.status < 500
+  );
 };

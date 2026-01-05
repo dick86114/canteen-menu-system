@@ -1,4 +1,21 @@
 /* 现代化食堂菜单系统样式 */
+
+/* 全局样式 - 确保整个页面都有正确的背景色 */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  min-height: 100vh;
+}
+
 :root {
   /* 主色调 - 清新蓝绿色系 */
   --primary-color: #2563eb;
@@ -6,42 +23,44 @@
   --primary-dark: #1d4ed8;
   --secondary-color: #64748b;
   --accent-color: #06b6d4;
-  
+
   /* 功能色彩 */
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
   --info-color: #06b6d4;
-  
+
   /* 背景色 */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #f1f5f9;
   --bg-dark: #0f172a;
   --bg-card: #ffffff;
-  
+
   /* 文字颜色 */
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   --text-white: #ffffff;
   --text-on-primary: #ffffff;
-  
+
   /* 边框和阴影 */
   --border-color: #e2e8f0;
   --border-light: #f1f5f9;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
   /* 圆角 */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
-  
+
   /* 间距 */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -51,11 +70,19 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --space-12: 3rem;
-  
+
   /* 字体 */
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  
+
   /* 过渡动画 */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -97,7 +124,11 @@ body {
 
 /* 导航栏 */
 .navbar {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-light) 100%
+  );
   backdrop-filter: blur(20px);
   border: none;
   box-shadow: var(--shadow-lg);
@@ -191,6 +222,17 @@ body {
 .current-date {
   text-align: center;
   min-width: 200px;
+  transition: all var(--transition-fast);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3);
+}
+
+.current-date:hover {
+  background: var(--bg-tertiary);
+}
+
+.current-date:active {
+  transform: scale(0.98);
 }
 
 .current-date h3 {
@@ -409,11 +451,19 @@ body {
 
 .calendar-day.has-specialty {
   position: relative;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(255, 107, 53, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-primary) 0%,
+    rgba(255, 107, 53, 0.1) 100%
+  );
 }
 
 .calendar-day.has-specialty:hover {
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(255, 107, 53, 0.2) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-tertiary) 0%,
+    rgba(255, 107, 53, 0.2) 100%
+  );
 }
 
 .calendar-day.selected .calendar-day-indicator,
@@ -432,6 +482,44 @@ body {
   justify-content: space-between;
   padding-top: var(--space-3);
   border-top: 1px solid var(--border-color);
+  gap: var(--space-3);
+}
+
+.calendar-today-btn {
+  flex: 0 0 auto;
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  transition: all var(--transition-fast);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.calendar-today-btn:hover {
+  background: var(--bg-secondary);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-today-btn:active {
+  transform: translateY(0);
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.calendar-today-btn i {
+  font-size: 0.9rem;
 }
 
 .calendar-legend {
@@ -478,25 +566,46 @@ body {
   .calendar-view {
     padding: var(--space-3);
   }
-  
+
   .calendar-day {
-    min-height: 40px;
-    padding: var(--space-1);
+    min-height: 48px; /* 增大触摸目标到48px */
+    padding: var(--space-2) var(--space-1);
   }
-  
+
   .calendar-day-number {
-    font-size: 0.8rem;
+    font-size: 0.95rem; /* 稍微增大字体 */
   }
-  
+
+  .calendar-day-indicator,
+  .calendar-day-specialty {
+    font-size: 0.7rem;
+  }
+
   .calendar-legend {
     gap: var(--space-2);
     font-size: 0.8rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  
+
   .calendar-footer {
     flex-direction: column;
     gap: var(--space-3);
-    align-items: stretch;
+  }
+
+  .calendar-today-btn {
+    min-height: 40px;
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.875rem;
+  }
+
+  .calendar-nav-btn {
+    width: 40px;
+    height: 40px; /* 增大触摸目标 */
+  }
+
+  .calendar-header {
+    padding: 0 var(--space-1);
   }
 }
 
@@ -544,7 +653,11 @@ body {
 }
 
 .meal-header {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-light)
+  );
   color: var(--text-white);
   padding: var(--space-4);
   display: flex;
@@ -602,9 +715,9 @@ body {
 }
 
 .food-items {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
 }
 
 /* 菜品项目 - 新的紧凑设计 */
@@ -766,8 +879,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 按钮样式 */
@@ -851,104 +968,104 @@ footer {
     padding-left: var(--space-3);
     padding-right: var(--space-3);
   }
-  
+
   .date-selector {
     padding: var(--space-4);
   }
-  
+
   .date-navigation {
     flex-direction: row;
     gap: var(--space-3);
     align-items: center;
     justify-content: space-between;
   }
-  
+
   .current-date {
     min-width: auto;
     flex: 1;
     text-align: center;
   }
-  
+
   .date-nav-btn {
     width: 50px;
     height: 50px;
     font-size: 1.4rem;
     flex-shrink: 0;
   }
-  
+
   .date-actions {
     width: 100%;
     justify-content: stretch;
   }
-  
+
   .date-quick-btn {
     flex: 1;
     text-align: center;
   }
-  
+
   .food-categories {
     grid-template-columns: 1fr;
     gap: var(--space-2);
   }
-  
+
   .food-category {
     padding: var(--space-2);
   }
-  
+
   .meal-header {
     padding: var(--space-3);
     flex-direction: column;
     gap: var(--space-2);
     text-align: center;
   }
-  
+
   .meal-content {
     padding: var(--space-3);
   }
-  
+
   .meal-stats {
     padding: var(--space-2) var(--space-3);
     flex-direction: column;
     gap: var(--space-1);
     text-align: center;
   }
-  
+
   .navbar-brand {
     font-size: 1.25rem;
   }
-  
+
   .menu-date-header h2 {
     font-size: 1.5rem;
   }
-  
+
   .menu-date-header .subtitle {
     font-size: 0.85rem;
     flex-direction: column;
     gap: var(--space-1);
   }
-  
+
   /* 档口特色移动端优化 */
   .specialty-banner {
     padding: var(--space-3);
     margin-bottom: var(--space-4);
   }
-  
+
   .specialty-banner-header h3 {
     font-size: 1.25rem;
   }
-  
+
   .specialty-banner-header i {
     font-size: 1.1rem;
   }
-  
+
   .specialty-banner-subtitle {
     font-size: 0.8rem;
   }
-  
+
   .specialty-dishes-list {
     gap: var(--space-1);
   }
-  
+
   .specialty-dish-item {
     padding: var(--space-1) var(--space-2);
     font-size: 0.8rem;
@@ -959,81 +1076,81 @@ footer {
   .date-navigation {
     gap: var(--space-2);
   }
-  
+
   .date-nav-btn {
     width: 46px;
     height: 46px;
     font-size: 1.2rem;
   }
-  
+
   .current-date h3 {
     font-size: 1.1rem;
     line-height: 1.3;
   }
-  
+
   .current-date .date-meta {
     font-size: 0.8rem;
   }
-  
+
   .meal-title {
     font-size: 1.1rem;
   }
-  
+
   .food-category {
     padding: var(--space-2);
   }
-  
+
   .category-title {
     font-size: 0.85rem;
     margin-bottom: var(--space-2);
   }
-  
+
   .food-item-content {
     padding: var(--space-1);
   }
-  
+
   .food-icon {
     font-size: 1rem;
     width: 20px;
   }
-  
+
   .food-name {
     font-size: 0.85rem;
   }
-  
+
   .food-description {
     font-size: 0.7rem;
   }
-  
+
   .food-price {
     font-size: 0.8rem;
   }
-  
+
   .date-range-info {
     font-size: 0.85rem;
     padding: var(--space-3) var(--space-4);
   }
-  
+
   /* 档口特色小屏幕优化 */
   .specialty-banner {
     padding: var(--space-2);
   }
-  
+
   .specialty-banner-header {
     flex-direction: row;
     gap: var(--space-1);
   }
-  
+
   .specialty-banner-header h3 {
     font-size: 1.1rem;
   }
-  
+
   .specialty-dishes-list {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
   }
-  
+
   .specialty-dish-item {
     font-size: 0.75rem;
     padding: 2px var(--space-1);
@@ -1042,6 +1159,11 @@ footer {
 
 /* 深色模式支持 - 修复文字颜色 */
 @media (prefers-color-scheme: dark) {
+  body {
+    background-color: #0f172a;
+    color: #f8fafc;
+  }
+
   :root {
     --bg-primary: #1e293b;
     --bg-secondary: #0f172a;
@@ -1053,99 +1175,200 @@ footer {
     --border-color: #334155;
     --border-light: #475569;
   }
-  
+
   /* 确保菜品项目在暗黑模式下文字可见 */
   .food-item {
-    background: var(--bg-card);
-    color: var(--text-primary);
-    border-color: var(--border-color);
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
   }
-  
+
   .food-name {
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
   }
-  
+
   .food-description {
-    color: var(--text-secondary);
+    color: var(--text-secondary) !important;
   }
-  
+
   .food-price {
-    color: var(--primary-light);
+    color: var(--primary-light) !important;
   }
-  
+
+  .food-item:hover {
+    background: var(--bg-card) !important;
+  }
+
   .food-item:hover .food-price {
-    color: var(--text-white);
+    color: var(--text-white) !important;
   }
-  
+
   /* 分类标题在暗黑模式下的颜色 */
   .category-title {
     color: var(--primary-light);
   }
-  
-  /* 档口特色在暗黑模式下保持橙金色风格 */
+
+  /* 档口特色在暗黑模式下保持橙金色风格，增强文字可见性 */
   .specialty-category {
     /* 保持原有的橙金色渐变，在暗黑模式下也很醒目 */
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffd700 100%) !important;
+    background: linear-gradient(
+      135deg,
+      #ff6b35 0%,
+      #f7931e 50%,
+      #ffd700 100%
+    ) !important;
     border-color: #ff8c42 !important;
   }
-  
+
   .specialty-category .category-title {
-    /* 标题保持白色文字，在橙色背景上很清晰 */
+    /* 标题保持白色文字，增加更强的阴影确保可见 */
     color: white !important;
-    background: rgba(255, 255, 255, 0.2) !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-  }
-  
-  .specialty-category .food-item {
-    /* 菜品项目使用半透明黑色背景，增强对比度 */
     background: rgba(0, 0, 0, 0.4) !important;
-    color: white !important;
-    border-color: rgba(255, 255, 255, 0.5) !important;
+    text-shadow:
+      2px 2px 4px rgba(0, 0, 0, 0.8),
+      0 0 10px rgba(0, 0, 0, 0.6) !important;
   }
-  
-  .specialty-category .food-item:hover {
-    background: rgba(0, 0, 0, 0.6) !important;
+
+  .specialty-category .food-item {
+    /* 菜品项目使用更深的黑色背景，增强对比度 */
+    background: rgba(0, 0, 0, 0.7) !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  .specialty-category .food-item .food-name {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9) !important;
+  }
+
+  .specialty-category .food-item .food-description {
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .specialty-category .food-item .food-price {
     color: #ffd700 !important;
-    border-color: rgba(255, 255, 255, 0.7) !important;
+    font-weight: 800 !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9) !important;
   }
-  
+
+  .specialty-category .food-item:hover {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border-color: rgba(255, 215, 0, 0.8) !important;
+  }
+
+  .specialty-category .food-item:hover .food-name {
+    color: #ffd700 !important;
+  }
+
   .specialty-category .food-item:hover .food-price {
-    color: white !important;
+    color: #ffffff !important;
   }
-  
+
   .specialty-title {
     color: white !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
   }
-  
+
   .specialty-title i {
     color: #ffd700 !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8) !important;
   }
-  
+
+  /* 档口特色横幅在暗黑模式下的优化 */
+  .specialty-banner {
+    background: linear-gradient(
+      135deg,
+      #ff6b35 0%,
+      #f7931e 50%,
+      #ffd700 100%
+    ) !important;
+  }
+
+  .specialty-banner-content {
+    color: white !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .specialty-banner-header h3 {
+    color: white !important;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9) !important;
+  }
+
+  .specialty-banner-subtitle {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .specialty-dish-item {
+    background: rgba(0, 0, 0, 0.5) !important;
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .specialty-dish-item:hover {
+    background: rgba(0, 0, 0, 0.7) !important;
+    border-color: rgba(255, 215, 0, 0.6) !important;
+  }
+
+  .specialty-dish-item span {
+    color: white !important;
+    font-weight: 600 !important;
+  }
+
+  .specialty-dish-item i {
+    color: #ffd700 !important;
+  }
+
   /* 餐次卡片在暗黑模式下的适配 */
   .meal-card {
     background: var(--bg-card);
     border-color: var(--border-color);
   }
-  
+
   .meal-stats {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
+    background: linear-gradient(
+      135deg,
+      var(--primary-color),
+      var(--primary-light)
+    );
+    color: #ffffff;
+    border-top: 2px solid #1e40af;
+    padding: 12px 16px;
   }
-  
+
+  .meal-stats span {
+    color: #1e293b;
+    font-weight: 600;
+  }
+
+  .meal-stats i {
+    color: #fbbf24;
+  }
+
   /* 食物分类在暗黑模式下的适配 */
   .food-category {
     background: var(--bg-tertiary);
     border-color: var(--border-light);
   }
-  
+
   /* 月历档口特色在暗黑模式下的适配 */
   .calendar-day.has-specialty {
-    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(255, 107, 53, 0.2) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--bg-card) 0%,
+      rgba(255, 107, 53, 0.2) 100%
+    );
   }
-  
+
   .calendar-day.has-specialty:hover {
-    background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(255, 107, 53, 0.3) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--bg-tertiary) 0%,
+      rgba(255, 107, 53, 0.3) 100%
+    );
   }
 }
 
@@ -1188,17 +1411,27 @@ footer {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   animation: specialtyShine 4s linear infinite;
   pointer-events: none;
 }
 
 @keyframes specialtyGlow {
   0% {
-    box-shadow: var(--shadow-lg), 0 0 15px rgba(255, 107, 53, 0.3);
+    box-shadow:
+      var(--shadow-lg),
+      0 0 15px rgba(255, 107, 53, 0.3);
   }
   100% {
-    box-shadow: var(--shadow-lg), 0 0 25px rgba(255, 107, 53, 0.5), 0 0 35px rgba(255, 215, 0, 0.3);
+    box-shadow:
+      var(--shadow-lg),
+      0 0 25px rgba(255, 107, 53, 0.5),
+      0 0 35px rgba(255, 215, 0, 0.3);
   }
 }
 
@@ -1294,7 +1527,9 @@ footer {
 .specialty-category {
   background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffd700 100%);
   border: 2px solid #ff8c42;
-  box-shadow: var(--shadow-lg), 0 0 15px rgba(255, 107, 53, 0.2);
+  box-shadow:
+    var(--shadow-lg),
+    0 0 15px rgba(255, 107, 53, 0.2);
   position: relative;
   overflow: hidden;
 }
@@ -1306,7 +1541,12 @@ footer {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
   animation: specialtyShine 6s linear infinite;
   pointer-events: none;
 }
@@ -1397,7 +1637,7 @@ footer {
   .specialty-banner-header i {
     animation: none;
   }
-  
+
   .specialty-banner::before {
     display: none;
   }
@@ -1410,20 +1650,20 @@ footer {
   footer {
     display: none;
   }
-  
+
   .meal-card {
     break-inside: avoid;
     box-shadow: none;
     border: 1px solid #000;
   }
-  
+
   .specialty-banner,
   .specialty-category {
     background: #f5f5f5 !important;
     border: 2px solid #333 !important;
     box-shadow: none !important;
   }
-  
+
   .specialty-banner-content,
   .specialty-title {
     color: #000 !important;

@@ -1,0 +1,246 @@
+// 动画样式
+// 定义滑动切换和模态框动画效果
+
+// 滑动切换动画（左滑进入）
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// 滑动切换动画（右滑进入）
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// 边界回弹动画
+@keyframes bounceBack {
+  0% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-20px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  70% {
+    transform: translateX(-5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+// 模态框进入动画
+.modal-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.modal-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+// 模态框退出动画
+.modal-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.modal-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 150ms ease-in, transform 150ms ease-in;
+}
+
+// 滑动切换动画类
+.menu-slide-enter {
+  animation: slideInRight 250ms ease-out;
+}
+
+.menu-slide-exit {
+  animation: slideInLeft 250ms ease-out;
+}
+
+// 边界回弹动画类
+.bounce-back {
+  animation: bounceBack 300ms ease-in-out;
+}
+
+// 性能优化：启用 GPU 加速
+.modal-enter-active,
+.modal-exit-active,
+.menu-slide-enter,
+.menu-slide-exit,
+.bounce-back {
+  will-change: transform, opacity;
+}
+
+// ========== 手势切换动画优化 ==========
+
+// 手势切换时的容器状态
+.gesture-handler {
+  &.menu-slide-enter {
+    animation: slideInRight 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &.menu-slide-exit {
+    animation: slideInLeft 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &.bounce-back {
+    animation: bounceBack 300ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+// 手势滑动时的实时跟随效果（可选）
+.gesture-handler.swiping {
+  transition: none; // 滑动时禁用过渡，实现实时跟随
+}
+
+// ========== 骨架屏动画 ==========
+
+// 骨架屏闪烁动画
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+// 骨架屏容器
+.skeleton-loader {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+// 骨架屏卡片
+.skeleton-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .skeleton-header {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .skeleton-title {
+      height: 24px;
+      width: 120px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200px 100%;
+      animation: skeleton-loading 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-subtitle {
+      height: 16px;
+      width: 80px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200px 100%;
+      animation: skeleton-loading 1.5s ease-in-out infinite;
+      animation-delay: 0.2s;
+    }
+  }
+
+  .skeleton-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .skeleton-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+
+      .skeleton-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200px 100%;
+        animation: skeleton-loading 1.5s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+
+      .skeleton-text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        .skeleton-line {
+          height: 14px;
+          border-radius: 4px;
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200px 100%;
+          animation: skeleton-loading 1.5s ease-in-out infinite;
+
+          &.short {
+            width: 60%;
+            animation-delay: 0.3s;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 移动端骨架屏适配
+@media (max-width: 767px) {
+  .skeleton-loader {
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .skeleton-card {
+    padding: 12px;
+    border-radius: 12px;
+
+    .skeleton-body {
+      gap: 8px;
+
+      .skeleton-item {
+        padding: 10px;
+
+        .skeleton-icon {
+          width: 28px;
+          height: 28px;
+        }
+
+        .skeleton-text {
+          .skeleton-line {
+            height: 12px;
+          }
+        }
+      }
+    }
+  }
+}
+

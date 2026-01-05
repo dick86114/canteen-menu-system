@@ -7,7 +7,7 @@ jest.mock('../../services/api', () => ({
   getAvailableDates: jest.fn().mockResolvedValue({ dates: [] }),
   getMenuByDate: jest.fn().mockResolvedValue({ date: '', meals: [] }),
 
-  handleApiError: jest.fn().mockReturnValue('测试错误')
+  handleApiError: jest.fn().mockReturnValue('测试错误'),
 }));
 
 describe('App 组件', () => {
@@ -24,7 +24,9 @@ describe('App 组件', () => {
       render(<App />);
     });
     expect(screen.getByText('暂无菜单数据')).toBeInTheDocument();
-    expect(screen.getByText('系统中暂时没有菜单信息，请联系管理员添加菜单数据')).toBeInTheDocument();
+    expect(
+      screen.getByText('系统中暂时没有菜单信息，请联系管理员添加菜单数据')
+    ).toBeInTheDocument();
   });
 
   test('应该包含导航栏', async () => {

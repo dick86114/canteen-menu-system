@@ -6,6 +6,8 @@ interface DateSelectorProps {
   onDateChange: (date: string) => void;
   availableDates: string[];
   loading?: boolean;
+  mealCount?: number;
+  dishCount?: number;
 }
 
 interface CalendarViewProps {
@@ -22,31 +24,50 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   availableDates,
   specialtyDates,
   onDateSelect,
-  onClose
+  onClose,
 }) => {
+  const calendarRef = React.useRef<HTMLDivElement>(null);
   const [currentMonth, setCurrentMonth] = useState(() => {
     // 默认显示选中日期所在的月份
     return selectedDate ? new Date(selectedDate + 'T00:00:00') : new Date();
   });
 
+  // 点击外部区域关闭月历
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+
+    // 只在月历打开时添加监听器
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
   // 获取月份的所有日期
   const getMonthDates = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    
+
     // 获取当月第一天
     const firstDay = new Date(year, month, 1);
-    
+
     // 获取第一周的开始日期（周一）
     const startDate = new Date(firstDay);
     const dayOfWeek = firstDay.getDay();
     const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 周一为0
     startDate.setDate(firstDay.getDate() - daysToSubtract);
-    
+
     // 生成6周的日期
     const dates = [];
     const current = new Date(startDate);
-    
+
     for (let week = 0; week < 6; week++) {
       const weekDates = [];
       for (let day = 0; day < 7; day++) {
@@ -55,7 +76,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       }
       dates.push(weekDates);
     }
-    
+
     return dates;
   };
 
@@ -90,18 +111,24 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
   // 检查是否是当前月份
   const isCurrentMonth = (date: Date): boolean => {
-    return date.getMonth() === currentMonth.getMonth() && 
-           date.getFullYear() === currentMonth.getFullYear();
+    return (
+      date.getMonth() === currentMonth.getMonth() &&
+      date.getFullYear() === currentMonth.getFullYear()
+    );
   };
 
   // 切换到上个月
   const previousMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+    setCurrentMonth(
+      prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+    );
   };
 
   // 切换到下个月
   const nextMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+    setCurrentMonth(
+      prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+    );
   };
 
   // 处理日期点击
@@ -109,98 +136,124 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     onDateSelect(formatDateString(date));
   };
 
+  // 获取今天的日期字符串
+  const getTodayString = (): string => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // 跳转到今天并关闭月历
+  const handleNavigateToToday = () => {
+    const todayStr = getTodayString();
+    onDateSelect(todayStr);
+    onClose();
+  };
+
   const monthDates = getMonthDates(currentMonth);
-  const monthName = currentMonth.toLocaleDateString('zh-CN', { 
-    year: 'numeric', 
-    month: 'long' 
+  const monthName = currentMonth.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
   });
 
   return (
-    <div className="calendar-view">
-      {/* 月份导航 */}
-      <div className="calendar-header">
-        <button 
-          className="calendar-nav-btn"
-          onClick={previousMonth}
-          title="上个月"
-        >
-          <i className="bi bi-chevron-left"></i>
-        </button>
-        <h4 className="calendar-title">{monthName}</h4>
-        <button 
-          className="calendar-nav-btn"
-          onClick={nextMonth}
-          title="下个月"
-        >
-          <i className="bi bi-chevron-right"></i>
-        </button>
-      </div>
-
-      {/* 星期标题 */}
-      <div className="calendar-weekdays">
-        {['一', '二', '三', '四', '五', '六', '日'].map(day => (
-          <div key={day} className="calendar-weekday">{day}</div>
-        ))}
-      </div>
-
-      {/* 日期网格 */}
-      <div className="calendar-grid">
-        {monthDates.map((week, weekIndex) => (
-          <div key={weekIndex} className="calendar-week">
-            {week.map((date, dayIndex) => {
-              const dateStr = formatDateString(date);
-              const hasMenuData = hasMenu(date);
-              const hasSpecialtyData = hasSpecialty(date);
-              const isTodayDate = isToday(date);
-              const isSelectedDate = isSelected(date);
-              const isCurrentMonthDate = isCurrentMonth(date);
-
-              return (
-                <button
-                  key={dayIndex}
-                  className={`calendar-day ${
-                    isSelectedDate ? 'selected' : ''
-                  } ${
-                    hasMenuData ? 'has-menu' : ''
-                  } ${
-                    hasSpecialtyData ? 'has-specialty' : ''
-                  } ${
-                    isTodayDate ? 'today' : ''
-                  } ${
-                    !isCurrentMonthDate ? 'other-month' : ''
-                  }`}
-                  onClick={() => handleDateClick(date)}
-                  title={`${dateStr}${hasMenuData ? ' (有菜单)' : ''}${hasSpecialtyData ? ' (有档口特色)' : ''}${isTodayDate ? ' (今天)' : ''}`}
-                >
-                  <span className="calendar-day-number">{date.getDate()}</span>
-                  {hasMenuData && <span className="calendar-day-indicator">●</span>}
-                  {hasSpecialtyData && <span className="calendar-day-specialty">⭐</span>}
-                </button>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-
-      {/* 底部操作 */}
-      <div className="calendar-footer">
-        <div className="calendar-legend">
-          <span className="legend-item">
-            <span className="legend-dot has-menu">●</span>
-            有菜单
-          </span>
-          <span className="legend-item">
-            <span className="legend-dot specialty">⭐</span>
-            档口特色
-          </span>
-          <span className="legend-item">
-            <span className="legend-dot today">●</span>
-            今天
-          </span>
+    <div className="date-list-container" onClick={onClose}>
+      <div
+        className="calendar-view"
+        ref={calendarRef}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 月份导航 */}
+        <div className="calendar-header">
+          <button
+            className="calendar-nav-btn"
+            onClick={previousMonth}
+            title="上个月"
+          >
+            <i className="bi bi-chevron-left"></i>
+          </button>
+          <h4 className="calendar-title">{monthName}</h4>
+          <button
+            className="calendar-nav-btn"
+            onClick={nextMonth}
+            title="下个月"
+          >
+            <i className="bi bi-chevron-right"></i>
+          </button>
         </div>
-        <button className="btn btn-secondary" onClick={onClose}>
-          关闭
-        </button>
+
+        {/* 星期标题 */}
+        <div className="calendar-weekdays">
+          {['一', '二', '三', '四', '五', '六', '日'].map(day => (
+            <div key={day} className="calendar-weekday">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* 日期网格 */}
+        <div className="calendar-grid">
+          {monthDates.map((week, weekIndex) => (
+            <div key={weekIndex} className="calendar-week">
+              {week.map((date, dayIndex) => {
+                const dateStr = formatDateString(date);
+                const hasMenuData = hasMenu(date);
+                const hasSpecialtyData = hasSpecialty(date);
+                const isTodayDate = isToday(date);
+                const isSelectedDate = isSelected(date);
+                const isCurrentMonthDate = isCurrentMonth(date);
+
+                return (
+                  <button
+                    key={dayIndex}
+                    className={`calendar-day ${
+                      isSelectedDate ? 'selected' : ''
+                    } ${hasMenuData ? 'has-menu' : ''} ${
+                      hasSpecialtyData ? 'has-specialty' : ''
+                    } ${isTodayDate ? 'today' : ''} ${
+                      !isCurrentMonthDate ? 'other-month' : ''
+                    }`}
+                    onClick={() => handleDateClick(date)}
+                    title={`${dateStr}${hasMenuData ? ' (有菜单)' : ''}${hasSpecialtyData ? ' (有档口特色)' : ''}${isTodayDate ? ' (今天)' : ''}`}
+                  >
+                    <span className="calendar-day-number">
+                      {date.getDate()}
+                    </span>
+                    {hasMenuData && (
+                      <span className="calendar-day-indicator">●</span>
+                    )}
+                    {hasSpecialtyData && (
+                      <span className="calendar-day-specialty">⭐</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* 底部操作 */}
+        <div className="calendar-footer">
+          <button
+            className="calendar-today-btn"
+            onClick={handleNavigateToToday}
+          >
+            <i className="bi bi-house"></i>
+            <span>今天</span>
+          </button>
+          <div className="calendar-legend">
+            <span className="legend-item">
+              <span className="legend-dot has-menu">●</span>
+              有菜单
+            </span>
+            <span className="legend-item">
+              <span className="legend-dot specialty">⭐</span>
+              档口特色
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -210,7 +263,9 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   selectedDate,
   onDateChange,
   availableDates,
-  loading = false
+  loading = false,
+  mealCount = 0,
+  dishCount = 0,
 }) => {
   const [showDateList, setShowDateList] = useState<boolean>(false);
   const [specialtyDates, setSpecialtyDates] = useState<string[]>([]);
@@ -219,7 +274,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   useEffect(() => {
     const fetchSpecialtyDates = async () => {
       if (availableDates.length === 0) return;
-      
+
       try {
         const response = await getSpecialtyDates();
         setSpecialtyDates(response.specialtyDates);
@@ -241,15 +296,15 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   // 获取日期范围信息
   const getDateRangeInfo = () => {
     if (availableDates.length === 0) return null;
-    
+
     const sortedDates = [...availableDates].sort();
     const startDate = parseDate(sortedDates[0]);
     const endDate = parseDate(sortedDates[sortedDates.length - 1]);
-    
+
     return {
       start: startDate,
       end: endDate,
-      count: availableDates.length
+      count: availableDates.length,
     };
   };
 
@@ -272,7 +327,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     const currentDate = parseDate(selectedDate);
     const previousDate = new Date(currentDate);
     previousDate.setDate(previousDate.getDate() - 1);
-    
+
     const previousDateStr = formatDate(previousDate);
     onDateChange(previousDateStr);
   };
@@ -282,31 +337,9 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     const currentDate = parseDate(selectedDate);
     const nextDate = new Date(currentDate);
     nextDate.setDate(nextDate.getDate() + 1);
-    
+
     const nextDateStr = formatDate(nextDate);
     onDateChange(nextDateStr);
-  };
-
-  // 跳转到今天（真正的今天，不管是否有菜单）
-  const navigateToToday = () => {
-    const today = formatDate(new Date());
-    onDateChange(today); // 直接跳转到今天，不管是否有菜单数据
-  };
-
-  // 跳转到第一天
-  const navigateToFirst = () => {
-    if (availableDates.length > 0) {
-      const sortedDates = [...availableDates].sort();
-      onDateChange(sortedDates[0]);
-    }
-  };
-
-  // 跳转到最后一天
-  const navigateToLast = () => {
-    if (availableDates.length > 0) {
-      const sortedDates = [...availableDates].sort();
-      onDateChange(sortedDates[sortedDates.length - 1]);
-    }
   };
 
   // 格式化显示日期
@@ -316,7 +349,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      weekday: 'long'
+      weekday: 'long',
     };
     return date.toLocaleDateString('zh-CN', options);
   };
@@ -327,7 +360,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     const options: Intl.DateTimeFormatOptions = {
       month: 'short',
       day: 'numeric',
-      weekday: 'short'
+      weekday: 'short',
     };
     return date.toLocaleDateString('zh-CN', options);
   };
@@ -395,10 +428,19 @@ const DateSelector: React.FC<DateSelectorProps> = ({
           <i className="bi bi-chevron-left"></i>
         </button>
 
-        <div className="current-date">
+        <div
+          className="current-date"
+          onClick={() => setShowDateList(true)}
+          style={{ cursor: 'pointer' }}
+          title="点击打开月历选择日期"
+        >
           <h3>{formatDisplayDate(selectedDate)}</h3>
           <div className="date-meta">
-            {currentIndex >= 0 ? (
+            {mealCount > 0 || dishCount > 0 ? (
+              <>
+                共 {mealCount} 个餐次 · {dishCount} 道菜品
+              </>
+            ) : currentIndex >= 0 ? (
               `第 ${currentIndex + 1} 天 / 共 ${availableDates.length} 天`
             ) : (
               `共 ${availableDates.length} 天菜单数据`
@@ -416,63 +458,23 @@ const DateSelector: React.FC<DateSelectorProps> = ({
         </button>
       </div>
 
-      {/* 快捷操作 */}
-      <div className="date-actions">
-        <button
-          className="date-quick-btn"
-          onClick={navigateToFirst}
-          title="第一天"
-        >
-          <i className="bi bi-skip-start me-1"></i>
-          第一天
-        </button>
-        
-        <button
-          className="date-quick-btn"
-          onClick={navigateToToday}
-          title="今天或最近"
-        >
-          <i className="bi bi-house me-1"></i>
-          今天
-        </button>
-        
-        <button
-          className="date-quick-btn"
-          onClick={() => setShowDateList(!showDateList)}
-          title="打开月历选择日期"
-        >
-          <i className="bi bi-calendar3 me-1"></i>
-          月历
-        </button>
-        
-        <button
-          className="date-quick-btn"
-          onClick={navigateToLast}
-          title="最后一天"
-        >
-          <i className="bi bi-skip-end me-1"></i>
-          最后一天
-        </button>
-      </div>
-
       {/* 月历选择器 */}
       {showDateList && (
-        <div className="date-list-container">
-          <CalendarView 
-            selectedDate={selectedDate}
-            availableDates={availableDates}
-            specialtyDates={specialtyDates}
-            onDateSelect={handleDateSelect}
-            onClose={() => setShowDateList(false)}
-          />
-        </div>
+        <CalendarView
+          selectedDate={selectedDate}
+          availableDates={availableDates}
+          specialtyDates={specialtyDates}
+          onDateSelect={handleDateSelect}
+          onClose={() => setShowDateList(false)}
+        />
       )}
 
       {/* 日期范围信息 */}
       {dateRangeInfo && (
         <div className="date-range-info">
           <i className="bi bi-info-circle me-2"></i>
-          可用日期：{formatShortDate(formatDate(dateRangeInfo.start))} 至 {formatShortDate(formatDate(dateRangeInfo.end))} 
+          可用日期：{formatShortDate(formatDate(dateRangeInfo.start))} 至{' '}
+          {formatShortDate(formatDate(dateRangeInfo.end))}
           （共 {dateRangeInfo.count} 天）
         </div>
       )}

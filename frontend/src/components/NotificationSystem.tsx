@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from 'react';
 
 // 通知类型定义
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
@@ -27,12 +33,16 @@ interface NotificationContextType {
   showInfo: (title: string, message?: string, duration?: number) => string;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined
+);
 
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
+    throw new Error(
+      'useNotifications must be used within a NotificationProvider'
+    );
   }
   return context;
 };
@@ -41,58 +51,82 @@ interface NotificationProviderProps {
   children: ReactNode;
 }
 
-export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
+export const NotificationProvider: React.FC<NotificationProviderProps> = ({
+  children,
+}) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
-    const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-    const newNotification: Notification = {
-      ...notification,
-      id,
-      duration: notification.duration ?? 5000, // 默认5秒
-    };
+  const addNotification = useCallback(
+    (notification: Omit<Notification, 'id'>) => {
+      const id =
+        Date.now().toString() + Math.random().toString(36).substr(2, 9);
+      const newNotification: Notification = {
+        ...notification,
+        id,
+        duration: notification.duration ?? 5000, // 默认5秒
+      };
 
-    setNotifications(prev => [...prev, newNotification]);
+      setNotifications(prev => [...prev, newNotification]);
 
-    // 自动移除通知（除非是持久化的）
-    if (!newNotification.persistent && newNotification.duration && newNotification.duration > 0) {
-      setTimeout(() => {
-        removeNotification(id);
-      }, newNotification.duration);
-    }
+      // 自动移除通知（除非是持久化的）
+      if (
+        !newNotification.persistent &&
+        newNotification.duration &&
+        newNotification.duration > 0
+      ) {
+        setTimeout(() => {
+          removeNotification(id);
+        }, newNotification.duration);
+      }
 
-    return id;
-  }, []);
+      return id;
+    },
+    []
+  );
 
   const removeNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
+    setNotifications(prev =>
+      prev.filter(notification => notification.id !== id)
+    );
   }, []);
 
   const clearAllNotifications = useCallback(() => {
     setNotifications([]);
   }, []);
 
-  const showSuccess = useCallback((title: string, message?: string, duration?: number) => {
-    return addNotification({ type: 'success', title, message, duration });
-  }, [addNotification]);
+  const showSuccess = useCallback(
+    (title: string, message?: string, duration?: number) => {
+      return addNotification({ type: 'success', title, message, duration });
+    },
+    [addNotification]
+  );
 
-  const showError = useCallback((title: string, message?: string, persistent?: boolean) => {
-    return addNotification({ 
-      type: 'error', 
-      title, 
-      message, 
-      persistent,
-      duration: persistent ? 0 : 8000 // 错误消息显示更长时间
-    });
-  }, [addNotification]);
+  const showError = useCallback(
+    (title: string, message?: string, persistent?: boolean) => {
+      return addNotification({
+        type: 'error',
+        title,
+        message,
+        persistent,
+        duration: persistent ? 0 : 8000, // 错误消息显示更长时间
+      });
+    },
+    [addNotification]
+  );
 
-  const showWarning = useCallback((title: string, message?: string, duration?: number) => {
-    return addNotification({ type: 'warning', title, message, duration });
-  }, [addNotification]);
+  const showWarning = useCallback(
+    (title: string, message?: string, duration?: number) => {
+      return addNotification({ type: 'warning', title, message, duration });
+    },
+    [addNotification]
+  );
 
-  const showInfo = useCallback((title: string, message?: string, duration?: number) => {
-    return addNotification({ type: 'info', title, message, duration });
-  }, [addNotification]);
+  const showInfo = useCallback(
+    (title: string, message?: string, duration?: number) => {
+      return addNotification({ type: 'info', title, message, duration });
+    },
+    [addNotification]
+  );
 
   const value: NotificationContextType = {
     notifications,
@@ -152,8 +186,11 @@ const NotificationContainer: React.FC = () => {
   }
 
   return (
-    <div className="notification-container position-fixed top-0 end-0 p-3" style={{ zIndex: 1050 }}>
-      {notifications.map((notification) => (
+    <div
+      className="notification-container position-fixed top-0 end-0 p-3"
+      style={{ zIndex: 1050 }}
+    >
+      {notifications.map(notification => (
         <div
           key={notification.id}
           className={`alert ${getNotificationClass(notification.type)} alert-dismissible fade show mb-2`}
@@ -161,7 +198,9 @@ const NotificationContainer: React.FC = () => {
           style={{ minWidth: '300px', maxWidth: '400px' }}
         >
           <div className="d-flex align-items-start">
-            <i className={`bi ${getNotificationIcon(notification.type)} me-2 mt-1`}></i>
+            <i
+              className={`bi ${getNotificationIcon(notification.type)} me-2 mt-1`}
+            ></i>
             <div className="flex-grow-1">
               <div className="fw-bold">{notification.title}</div>
               {notification.message && (

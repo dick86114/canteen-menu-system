@@ -8,7 +8,9 @@ interface NetworkStatus {
   checkConnection: () => Promise<void>;
 }
 
-export const useNetworkStatus = (checkInterval: number = 30000): NetworkStatus => {
+export const useNetworkStatus = (
+  checkInterval: number = 30000
+): NetworkStatus => {
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [isConnected, setIsConnected] = useState<boolean>(true);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);

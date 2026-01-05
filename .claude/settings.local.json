@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pwsh:*)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm add:*)",
+      "Bash(timeout:*)",
+      "Bash(powershell:*)",
+      "Bash(pnpm run lint)",
+      "Bash(pnpm run format:*)",
+      "Bash(cat:*)"
+    ]
+  }
+}
