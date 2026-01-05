@@ -7,21 +7,24 @@ FROM node:18-alpine AS frontend-builder
 # 设置工作目录
 WORKDIR /app/frontend
 
-# 安装git（某些npm包可能需要）
-RUN apk add --no-cache git
+# 安装git和pnpm
+RUN apk add --no-cache git coreutils
+
+# 安装pnpm
+RUN npm install -g pnpm
 
 # 复制前端依赖文件
-COPY frontend/package*.json ./
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
-# 清理npm缓存并安装依赖
-RUN npm cache clean --force && npm ci
+# 安装依赖
+RUN pnpm install --frozen-lockfile
 
 # 复制前端源码
 COPY frontend/ ./
 
 # 构建前端
 RUN echo "开始构建前端..." && \
-    npm run build && \
+    pnpm run build && \
     echo "前端构建完成，检查输出目录..." && \
     ls -la dist/
 
